@@ -293,40 +293,7 @@ public:
   };
   int pick_left = 0, pick_right = 0;
 
-    void View() const {
-      if (calibration_mode) {
-        DrawCalibration();
-        return;
-      }
-
-      gfxHeader("Setup/About");
-      gfxIcon(80, 0, OC::calibration_data.flipscreen() ? DOWN_ICON : UP_ICON);
-      gfxIcon(90, 0, OC::calibration_data.flipcontrols() ? LEFT_ICON : RIGHT_ICON);
-
-      #if defined(ARDUINO_TEENSY40)
-      gfxPrint(100, 0, "T4.0");
-      //gfxPrint(0, 45, "E2END="); gfxPrint(E2END);
-      #elif defined(ARDUINO_TEENSY41)
-      gfxPrint(100, 0, "T4.1");
-      #else
-      gfxPrint(100, 0, "T3.2");
-      #endif
-
-      gfxIcon(0, 15, iconography[pick_left]);
-      gfxIcon(120, 15, iconography[pick_right]);
-      #ifdef PEWPEWPEW
-      gfxPrint(21, 15, "PEW! PEW! PEW!");
-      #else
-      gfxPrint(12, 15, OC::Strings::RELEASE_NAME);
-      #endif
-      gfxIcon(0, 25, PhzIcons::full_book);
-      gfxPrint(10, 25, OC::Strings::VERSION);
-      gfxIcon(0, 35, PhzIcons::runglBook);
-      gfxPrint(10, 35, OC::Strings::BUILD_TAG);
-      gfxIcon(0, 45, PhzIcons::frontBack);
-      gfxPrint(10, 45, "github.com/djphazer");
-      gfxPrint(0, 55, reflash ? "[Reflash]" : "[CALIBRATE]   [RESET]");
-  }
+    void View() const;
 
   void DrawCalibration() const {
     const OC::CalibrationStep *step = calstate.current_step;
@@ -616,6 +583,41 @@ public:
     }
 };
 
+FLASHMEM void AppSettings::View() const {
+  if (calibration_mode) {
+    DrawCalibration();
+    return;
+  }
+
+  gfxHeader("Setup/About");
+  gfxIcon(80, 0, OC::calibration_data.flipscreen() ? DOWN_ICON : UP_ICON);
+  gfxIcon(90, 0, OC::calibration_data.flipcontrols() ? LEFT_ICON : RIGHT_ICON);
+
+  #if defined(ARDUINO_TEENSY40)
+  gfxPrint(100, 0, "T4.0");
+  //gfxPrint(0, 45, "E2END="); gfxPrint(E2END);
+  #elif defined(ARDUINO_TEENSY41)
+  gfxPrint(100, 0, "T4.1");
+  #else
+  gfxPrint(100, 0, "T3.2");
+  #endif
+
+  gfxIcon(0, 15, iconography[pick_left]);
+  gfxIcon(120, 15, iconography[pick_right]);
+  #ifdef PEWPEWPEW
+  gfxPrint(21, 15, "PEW! PEW! PEW!");
+  #else
+  gfxPrint(12, 15, OC::Strings::RELEASE_NAME);
+  #endif
+  gfxIcon(0, 25, PhzIcons::full_book);
+  gfxPrint(10, 25, OC::Strings::VERSION);
+  gfxIcon(0, 35, PhzIcons::runglBook);
+  gfxPrint(10, 35, OC::Strings::BUILD_TAG);
+  gfxIcon(0, 45, PhzIcons::frontBack);
+  gfxPrint(10, 45, "github.com/djphazer");
+  gfxPrint(0, 55, reflash ? "[Reflash]" : "[CALIBRATE]   [RESET]");
+}
+
 void AppSettings::Init() {
     BaseStart();
 }
@@ -663,10 +665,10 @@ void AppSettings::DrawScreensaver() const {
   ZapScreensaver();
 }
 
-void AppSettings::HandleButtonEvent(const UI::Event &event) {
+FLASHMEM void AppSettings::HandleButtonEvent(const UI::Event &event) {
   HandleUiEvent(event);
 }
 
-void AppSettings::HandleEncoderEvent(const UI::Event &event) {
+FLASHMEM void AppSettings::HandleEncoderEvent(const UI::Event &event) {
   HandleUiEvent(event);
 }

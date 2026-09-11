@@ -428,118 +428,7 @@ public:
 
     void View();
 
-    void OnButtonPress() {
-        if (random_menu_active) {
-            switch (random_menu_cursor.cursor_pos()) {
-            case RandomCursor::RANDOM_APPLY:
-                // Randomize the steps
-                randomize_steps();
-                osc_draw_reinit = true;
-                // No break so it falls through and returns to the main view
-            case RandomCursor::RANDOM_CANCEL:
-                random_menu_active = false;
-                return;
-            case RandomCursor::RANDOM_OFFSETS:
-                random_offsets = !random_offsets;
-                return;
-            case RandomCursor::RANDOM_AMPS:
-                random_amps = !random_amps;
-                return;
-            case RandomCursor::RANDOM_SHAPES:
-                random_shapes = !random_shapes;
-                return;
-            case RandomCursor::RANDOM_VOSC:
-                random_vosc = !random_vosc;
-                return;
-            case RandomCursor::RANDOM_LENGTHS:
-                random_lengths = !random_lengths;
-                return;
-            case RandomCursor::RANDOM_TRIGGERS:
-                random_triggers = !random_triggers;
-                return;
-            case RandomCursor::RANDOM_CLOCKS:
-                random_clocks = !random_clocks;
-                return;
-            case RandomCursor::RANDOM_MOD_MARKS:
-                random_mod_marks = !random_mod_marks;
-                return;
-            case RandomCursor::RANDOM_RETRIGGER_LEVELS:
-                random_retrigger_levels = !random_retrigger_levels;
-                return;
-            case RandomCursor::RANDOM_GATE_LENGTHS:
-                random_gate_lengths = !random_gate_lengths;
-                return;
-            case RandomCursor::RANDOM_PROBABILITIES:
-                random_probabilities = !random_probabilities;
-                return;
-            }
-        }
-
-        if (linked_cursor == LinkedCursor::UNLINK) {
-            // Unlink and return to the main view
-            EnvSeqManager::SetLink(hemisphere, false);
-            linked_cursor = LinkedCursor::MAX_LINKED_CURSOR;
-            return;
-        }
-
-        if (linked_cursor != LinkedCursor::MAX_LINKED_CURSOR || random_menu_active) {
-            // Keep other view open and toggle the cursor so it edits the current option
-            CursorToggle();
-            return;
-        }
-
-        switch (cursor) {
-        case EnvSeqCursor::LINK:
-            // Link and open linked view
-            EnvSeqManager::SetLink(hemisphere, true);
-            linked_cursor = LinkedCursor::UNLINK;
-            return;
-
-        case EnvSeqCursor::RANDOM:
-            // Open random view
-            random_menu_active = true;
-            random_menu_cursor.Init(0, RandomCursor::MAX_RANDOM_CURSOR - 1);
-            random_menu_cursor.Scroll(RandomCursor::RANDOM_APPLY);
-            return;
-
-        case EnvSeqCursor::TRIGGER2:
-            trigger2 = !trigger2;
-            return;
-
-        case EnvSeqCursor::RESET:
-            Reset();
-            return;
-        case EnvSeqCursor::INIT:
-            init_steps();
-            return;
-
-        case EnvSeqCursor::STEP_PARAM_VALUE:
-            switch (step_param_cursor) {
-            case StepParamCursor::STEP_PARAM_WAVEFORM_REVERT:
-                steps[step_view].waveform_revert = !steps[step_view].waveform_revert;
-                return;
-            case StepParamCursor::STEP_PARAM_WAVEFORM_INVERT:
-                steps[step_view].waveform_invert = !steps[step_view].waveform_invert;
-                return;
-            case StepParamCursor::STEP_PARAM_MOD_MARK:
-                steps[step_view].mod_mark = !steps[step_view].mod_mark;
-                return;
-            case StepParamCursor::STEP_PARAM_COPY:
-                EnvSeqManager::CopyStep(steps[step_view]);
-                return;
-            case StepParamCursor::STEP_PARAM_PASTE:
-                EnvSeqManager::PasteStep(steps[step_view]);
-                osc_draw_reinit = true;
-                if (step == step_view) {
-                    osc_reinit = true;
-                }
-                return;
-            }
-
-          default:
-              CursorToggle();
-        }
-    }
+    void OnButtonPress();
 
     void AuxButton() {
         if (cursor > EnvSeqCursor::STEP_VIEW) {
@@ -550,133 +439,7 @@ public:
         }
     }
 
-    void OnEncoderMove(int direction) {
-        if (linked_cursor < MAX_LINKED_CURSOR) {
-            if (!EditMode()) {
-                MoveCursor(linked_cursor, direction, LinkedCursor::MAX_LINKED_CURSOR - 1);
-                return;
-            }
-
-            EnvSeqManager::LinkedData* linked_data = EnvSeqManager::GetLinkedData(hemisphere);
-            switch (linked_cursor) {
-            case LinkedCursor::LINKED_MOD1_MODE:
-                linked_data[0].SetModulationMode(linked_data[0].modulation.mode + direction);
-                break;
-            case LinkedCursor::LINKED_MOD2_MODE:
-                linked_data[1].SetModulationMode(linked_data[1].modulation.mode + direction);
-                break;
-            case LinkedCursor::LINKED_OUTPUT1_MODE:
-                linked_data[0].SetModulationOutputMode(linked_data[0].modulation.output_mode + direction);
-                break;
-            case LinkedCursor::LINKED_OUTPUT2_MODE:
-                linked_data[1].SetModulationOutputMode(linked_data[1].modulation.output_mode + direction);
-                break;
-            }
-
-            return;
-        }
-
-        if (random_menu_active) {
-            random_menu_cursor.Scroll(direction);
-            return;
-        }
-
-        if (!EditMode()) {
-            MoveCursor(cursor, direction, EnvSeqCursor::MAX_CURSOR - 1);
-            if (cursor == EnvSeqCursor::LINK && !EnvSeqManager::CanLink(hemisphere)) {
-                // Cannot link, skip cursor 
-                cursor += direction > 0 ? 1 : -1;
-            }
-            return;
-        }
-
-        if (cursor > EnvSeqCursor::STEP_VIEW && step_select) {
-            step_view = constrain(step_view + direction, 0, MAX_NUM_STEPS - 1);
-            osc_draw_reinit = true;
-            return;
-        }
-
-        switch (cursor) {
-        case EnvSeqCursor::MOD1_MODE:
-            mod1_mode = (ModulationMode)constrain(mod1_mode + direction, 0, ModulationMode::MAX_MODULATION_MODE - 1);
-            break;
-        case EnvSeqCursor::MOD2_MODE:
-            mod2_mode = (EnvSeqManager::ModulationMode)constrain(mod2_mode + direction, 0, EnvSeqManager::ModulationMode::MAX_MODULATION_MODE - 1);
-            break;
-        case EnvSeqCursor::OUTPUT2_MODE:
-            output2_mode = (EnvSeqManager::OutputMode)constrain(output2_mode + direction, 0, EnvSeqManager::OutputMode::MAX_OUTPUT_MODE - 1);
-            break;
-        case EnvSeqCursor::NUM_STEPS:
-            num_steps = (uint8_t)constrain(num_steps + direction, 1, MAX_NUM_STEPS);
-            break;
-        case EnvSeqCursor::STEP_VIEW:
-            step_view = (uint8_t)constrain(step_view + direction, 0, MAX_NUM_STEPS - 1);
-            osc_draw_reinit = true;
-            break;
-        case EnvSeqCursor::STEP_SHAPE: {
-            int shape = steps[step_view].shape + direction;
-            if (shape < 0) {
-                shape = 0;
-            } else if (shape >= Shape::VOSC) {
-                if (steps[step_view].shape < Shape::VOSC) {
-                    // Entering into VOSC mode
-                    shape = get_nth_waveform(shape - Shape::VOSC);
-                } else {
-                    // Already in VOSC mode
-                    shape = WaveformManager::GetNextWaveform(steps[step_view].shape - Shape::VOSC, direction);
-                }
-                shape += Shape::VOSC;
-            }
-
-            steps[step_view].shape = shape;
-            reinit_osc();
-            break;
-        }
-        case EnvSeqCursor::STEP_PARAM:
-            MoveCursor(step_param_cursor, direction, StepParamCursor::MAX_STEP_PARAM_CURSOR - 1);
-            if (step_param_cursor == StepParamCursor::STEP_PARAM_PASTE && !EnvSeqManager::HasClipboard()) {
-                // No clipboard, set to copy cursor
-                step_param_cursor = StepParamCursor::STEP_PARAM_COPY;
-            }
-            break;
-        case EnvSeqCursor::STEP_PARAM_VALUE:
-            switch (step_param_cursor) {
-            case StepParamCursor::STEP_PARAM_OFFSET:
-                steps[step_view].offset = (int16_t)constrain(steps[step_view].offset + direction, HEMISPHERE_MIN_CV / OFFSET_SCALE_INCREMENT, HEMISPHERE_MAX_CV / OFFSET_SCALE_INCREMENT);
-                break;
-            case StepParamCursor::STEP_PARAM_AMP:
-                steps[step_view].amp = (int16_t)constrain(steps[step_view].amp + direction, HEMISPHERE_MIN_CV / OFFSET_SCALE_INCREMENT, HEMISPHERE_MAX_CV / OFFSET_SCALE_INCREMENT);
-                break;
-            case StepParamCursor::STEP_PARAM_WAVEFORM_OFFSET:
-                steps[step_view].waveform_offset = (uint8_t)constrain(steps[step_view].waveform_offset + direction, 0, 100);
-                break;
-            case StepParamCursor::STEP_PARAM_WAVEFORM_OPTION:
-                steps[step_view].waveform_option = (EnvSeqManager::Option)constrain(steps[step_view].waveform_option + direction, 0, EnvSeqManager::Option::MAX_OPTIONS - 1);
-                break;
-            case StepParamCursor::STEP_PARAM_TRIGGERS:
-                steps[step_view].triggers = (uint8_t)constrain(steps[step_view].triggers + direction, 0, 7);
-                break;
-            case StepParamCursor::STEP_PARAM_CLOCKS:
-                steps[step_view].clocks = (uint8_t)constrain(steps[step_view].clocks + direction, 0, 7);
-                break;
-            case StepParamCursor::STEP_PARAM_LENGTH:
-                steps[step_view].length = (uint8_t)constrain(steps[step_view].length + direction, 1, 200);
-                break;
-            case StepParamCursor::STEP_PARAM_PROBABILITY:
-                steps[step_view].probability = (uint8_t)constrain(steps[step_view].probability + direction, 0, 100);
-                break;
-            case StepParamCursor::STEP_PARAM_RETRIGGER_LEVEL:
-                steps[step_view].retrigger_level = (int8_t)constrain(steps[step_view].retrigger_level + direction, -15, 15);
-                break;
-            case StepParamCursor::STEP_PARAM_GATE_LENGTH:
-                steps[step_view].gate_length = (int8_t)constrain(steps[step_view].gate_length + direction, 0, 255);
-                break;
-            }
-            break;
-        }
-
-        reinit_osc();
-    }
+    void OnEncoderMove(int direction);
 
     uint64_t OnDataRequest() {
         uint64_t data = 0;
@@ -721,47 +484,7 @@ public:
         return data;
     }
 
-    void OnDataReceive(uint64_t data) {
-        trigger2 = Unpack(data, PackLocation {0, 1});
-        num_steps = constrain(Unpack(data, PackLocation {1, 5}) + 1, 1, MAX_NUM_STEPS);
-        mod1_mode = (ModulationMode)constrain(Unpack(data, PackLocation {6, 3}), 0, ModulationMode::MAX_MODULATION_MODE - 1);
-        mod2_mode = (EnvSeqManager::ModulationMode)constrain(Unpack(data, PackLocation {9, 4}), 0, EnvSeqManager::ModulationMode::MAX_MODULATION_MODE - 1);
-        output2_mode = (EnvSeqManager::OutputMode)constrain(Unpack(data, PackLocation {13, 3}), 0, EnvSeqManager::OutputMode::MAX_OUTPUT_MODE - 1);
-
-        EnvSeqManager::SetLink(hemisphere, Unpack(data, PackLocation {16, 1}));
-        if (EnvSeqManager::IsLinked(hemisphere)) {
-            linked_cursor = LinkedCursor::UNLINK;
-        }
-        EnvSeqManager::LinkedData* linked_data = EnvSeqManager::GetLinkedData(hemisphere);
-        linked_data[0].SetModulationMode(Unpack(data, PackLocation {17, 4}));
-        linked_data[1].SetModulationMode(Unpack(data, PackLocation {21, 4}));
-        linked_data[0].SetModulationOutputMode(Unpack(data, PackLocation {25, 4}));
-        linked_data[1].SetModulationOutputMode(Unpack(data, PackLocation {29, 4}));
-
-        random_offsets = Unpack(data, PackLocation {33, 1});
-        random_amps = Unpack(data, PackLocation {34, 1});
-        random_shapes = Unpack(data, PackLocation {35, 1});
-        random_vosc = Unpack(data, PackLocation {36, 1});
-        random_lengths = Unpack(data, PackLocation {37, 1});
-        random_triggers = Unpack(data, PackLocation {38, 1});
-        random_clocks = Unpack(data, PackLocation {39, 1});
-        random_mod_marks = Unpack(data, PackLocation {40, 1});
-        random_retrigger_levels = Unpack(data, PackLocation {41, 1});
-        random_gate_lengths = Unpack(data, PackLocation {42, 1});
-        random_probabilities = Unpack(data, PackLocation {43, 1});
-
-        uint8_t* p = (uint8_t*)steps;
-        size_t i = 0;
-        while (i < MAX_NUM_STEPS * sizeof(EnvSeqManager::Step)) {
-          if ((i % 8) == 0) {
-            if (!GetData(i / 8, data)) break;
-          }
-          *p++ = Unpack(data, PackLocation{(i % 8) * 8, 8});
-          ++i;
-        }
-
-        Reset();
-    }
+    void OnDataReceive(uint64_t data);
 
 protected:
     void SetHelp() {
@@ -1592,6 +1315,289 @@ private:
       return EnvSeqManager::option_txt[option];
     }
 };
+
+FLASHMEM void EnvSeq::OnDataReceive(uint64_t data) {
+    trigger2 = Unpack(data, PackLocation {0, 1});
+    num_steps = constrain(Unpack(data, PackLocation {1, 5}) + 1, 1, MAX_NUM_STEPS);
+    mod1_mode = (ModulationMode)constrain(Unpack(data, PackLocation {6, 3}), 0, ModulationMode::MAX_MODULATION_MODE - 1);
+    mod2_mode = (EnvSeqManager::ModulationMode)constrain(Unpack(data, PackLocation {9, 4}), 0, EnvSeqManager::ModulationMode::MAX_MODULATION_MODE - 1);
+    output2_mode = (EnvSeqManager::OutputMode)constrain(Unpack(data, PackLocation {13, 3}), 0, EnvSeqManager::OutputMode::MAX_OUTPUT_MODE - 1);
+
+    EnvSeqManager::SetLink(hemisphere, Unpack(data, PackLocation {16, 1}));
+    if (EnvSeqManager::IsLinked(hemisphere)) {
+        linked_cursor = LinkedCursor::UNLINK;
+    }
+    EnvSeqManager::LinkedData* linked_data = EnvSeqManager::GetLinkedData(hemisphere);
+    linked_data[0].SetModulationMode(Unpack(data, PackLocation {17, 4}));
+    linked_data[1].SetModulationMode(Unpack(data, PackLocation {21, 4}));
+    linked_data[0].SetModulationOutputMode(Unpack(data, PackLocation {25, 4}));
+    linked_data[1].SetModulationOutputMode(Unpack(data, PackLocation {29, 4}));
+
+    random_offsets = Unpack(data, PackLocation {33, 1});
+    random_amps = Unpack(data, PackLocation {34, 1});
+    random_shapes = Unpack(data, PackLocation {35, 1});
+    random_vosc = Unpack(data, PackLocation {36, 1});
+    random_lengths = Unpack(data, PackLocation {37, 1});
+    random_triggers = Unpack(data, PackLocation {38, 1});
+    random_clocks = Unpack(data, PackLocation {39, 1});
+    random_mod_marks = Unpack(data, PackLocation {40, 1});
+    random_retrigger_levels = Unpack(data, PackLocation {41, 1});
+    random_gate_lengths = Unpack(data, PackLocation {42, 1});
+    random_probabilities = Unpack(data, PackLocation {43, 1});
+
+    uint8_t* p = (uint8_t*)steps;
+    size_t i = 0;
+    while (i < MAX_NUM_STEPS * sizeof(EnvSeqManager::Step)) {
+      if ((i % 8) == 0) {
+        if (!GetData(i / 8, data)) break;
+      }
+      *p++ = Unpack(data, PackLocation{(i % 8) * 8, 8});
+      ++i;
+    }
+
+    Reset();
+}
+
+FLASHMEM void EnvSeq::OnEncoderMove(int direction) {
+    if (linked_cursor < MAX_LINKED_CURSOR) {
+        if (!EditMode()) {
+            MoveCursor(linked_cursor, direction, LinkedCursor::MAX_LINKED_CURSOR - 1);
+            return;
+        }
+
+        EnvSeqManager::LinkedData* linked_data = EnvSeqManager::GetLinkedData(hemisphere);
+        switch (linked_cursor) {
+        case LinkedCursor::LINKED_MOD1_MODE:
+            linked_data[0].SetModulationMode(linked_data[0].modulation.mode + direction);
+            break;
+        case LinkedCursor::LINKED_MOD2_MODE:
+            linked_data[1].SetModulationMode(linked_data[1].modulation.mode + direction);
+            break;
+        case LinkedCursor::LINKED_OUTPUT1_MODE:
+            linked_data[0].SetModulationOutputMode(linked_data[0].modulation.output_mode + direction);
+            break;
+        case LinkedCursor::LINKED_OUTPUT2_MODE:
+            linked_data[1].SetModulationOutputMode(linked_data[1].modulation.output_mode + direction);
+            break;
+        }
+
+        return;
+    }
+
+    if (random_menu_active) {
+        random_menu_cursor.Scroll(direction);
+        return;
+    }
+
+    if (!EditMode()) {
+        MoveCursor(cursor, direction, EnvSeqCursor::MAX_CURSOR - 1);
+        if (cursor == EnvSeqCursor::LINK && !EnvSeqManager::CanLink(hemisphere)) {
+            // Cannot link, skip cursor 
+            cursor += direction > 0 ? 1 : -1;
+        }
+        return;
+    }
+
+    if (cursor > EnvSeqCursor::STEP_VIEW && step_select) {
+        step_view = constrain(step_view + direction, 0, MAX_NUM_STEPS - 1);
+        osc_draw_reinit = true;
+        return;
+    }
+
+    switch (cursor) {
+    case EnvSeqCursor::MOD1_MODE:
+        mod1_mode = (ModulationMode)constrain(mod1_mode + direction, 0, ModulationMode::MAX_MODULATION_MODE - 1);
+        break;
+    case EnvSeqCursor::MOD2_MODE:
+        mod2_mode = (EnvSeqManager::ModulationMode)constrain(mod2_mode + direction, 0, EnvSeqManager::ModulationMode::MAX_MODULATION_MODE - 1);
+        break;
+    case EnvSeqCursor::OUTPUT2_MODE:
+        output2_mode = (EnvSeqManager::OutputMode)constrain(output2_mode + direction, 0, EnvSeqManager::OutputMode::MAX_OUTPUT_MODE - 1);
+        break;
+    case EnvSeqCursor::NUM_STEPS:
+        num_steps = (uint8_t)constrain(num_steps + direction, 1, MAX_NUM_STEPS);
+        break;
+    case EnvSeqCursor::STEP_VIEW:
+        step_view = (uint8_t)constrain(step_view + direction, 0, MAX_NUM_STEPS - 1);
+        osc_draw_reinit = true;
+        break;
+    case EnvSeqCursor::STEP_SHAPE: {
+        int shape = steps[step_view].shape + direction;
+        if (shape < 0) {
+            shape = 0;
+        } else if (shape >= Shape::VOSC) {
+            if (steps[step_view].shape < Shape::VOSC) {
+                // Entering into VOSC mode
+                shape = get_nth_waveform(shape - Shape::VOSC);
+            } else {
+                // Already in VOSC mode
+                shape = WaveformManager::GetNextWaveform(steps[step_view].shape - Shape::VOSC, direction);
+            }
+            shape += Shape::VOSC;
+        }
+
+        steps[step_view].shape = shape;
+        reinit_osc();
+        break;
+    }
+    case EnvSeqCursor::STEP_PARAM:
+        MoveCursor(step_param_cursor, direction, StepParamCursor::MAX_STEP_PARAM_CURSOR - 1);
+        if (step_param_cursor == StepParamCursor::STEP_PARAM_PASTE && !EnvSeqManager::HasClipboard()) {
+            // No clipboard, set to copy cursor
+            step_param_cursor = StepParamCursor::STEP_PARAM_COPY;
+        }
+        break;
+    case EnvSeqCursor::STEP_PARAM_VALUE:
+        switch (step_param_cursor) {
+        case StepParamCursor::STEP_PARAM_OFFSET:
+            steps[step_view].offset = (int16_t)constrain(steps[step_view].offset + direction, HEMISPHERE_MIN_CV / OFFSET_SCALE_INCREMENT, HEMISPHERE_MAX_CV / OFFSET_SCALE_INCREMENT);
+            break;
+        case StepParamCursor::STEP_PARAM_AMP:
+            steps[step_view].amp = (int16_t)constrain(steps[step_view].amp + direction, HEMISPHERE_MIN_CV / OFFSET_SCALE_INCREMENT, HEMISPHERE_MAX_CV / OFFSET_SCALE_INCREMENT);
+            break;
+        case StepParamCursor::STEP_PARAM_WAVEFORM_OFFSET:
+            steps[step_view].waveform_offset = (uint8_t)constrain(steps[step_view].waveform_offset + direction, 0, 100);
+            break;
+        case StepParamCursor::STEP_PARAM_WAVEFORM_OPTION:
+            steps[step_view].waveform_option = (EnvSeqManager::Option)constrain(steps[step_view].waveform_option + direction, 0, EnvSeqManager::Option::MAX_OPTIONS - 1);
+            break;
+        case StepParamCursor::STEP_PARAM_TRIGGERS:
+            steps[step_view].triggers = (uint8_t)constrain(steps[step_view].triggers + direction, 0, 7);
+            break;
+        case StepParamCursor::STEP_PARAM_CLOCKS:
+            steps[step_view].clocks = (uint8_t)constrain(steps[step_view].clocks + direction, 0, 7);
+            break;
+        case StepParamCursor::STEP_PARAM_LENGTH:
+            steps[step_view].length = (uint8_t)constrain(steps[step_view].length + direction, 1, 200);
+            break;
+        case StepParamCursor::STEP_PARAM_PROBABILITY:
+            steps[step_view].probability = (uint8_t)constrain(steps[step_view].probability + direction, 0, 100);
+            break;
+        case StepParamCursor::STEP_PARAM_RETRIGGER_LEVEL:
+            steps[step_view].retrigger_level = (int8_t)constrain(steps[step_view].retrigger_level + direction, -15, 15);
+            break;
+        case StepParamCursor::STEP_PARAM_GATE_LENGTH:
+            steps[step_view].gate_length = (int8_t)constrain(steps[step_view].gate_length + direction, 0, 255);
+            break;
+        }
+        break;
+    }
+
+    reinit_osc();
+}
+
+FLASHMEM void EnvSeq::OnButtonPress() {
+    if (random_menu_active) {
+        switch (random_menu_cursor.cursor_pos()) {
+        case RandomCursor::RANDOM_APPLY:
+            // Randomize the steps
+            randomize_steps();
+            osc_draw_reinit = true;
+            // No break so it falls through and returns to the main view
+        case RandomCursor::RANDOM_CANCEL:
+            random_menu_active = false;
+            return;
+        case RandomCursor::RANDOM_OFFSETS:
+            random_offsets = !random_offsets;
+            return;
+        case RandomCursor::RANDOM_AMPS:
+            random_amps = !random_amps;
+            return;
+        case RandomCursor::RANDOM_SHAPES:
+            random_shapes = !random_shapes;
+            return;
+        case RandomCursor::RANDOM_VOSC:
+            random_vosc = !random_vosc;
+            return;
+        case RandomCursor::RANDOM_LENGTHS:
+            random_lengths = !random_lengths;
+            return;
+        case RandomCursor::RANDOM_TRIGGERS:
+            random_triggers = !random_triggers;
+            return;
+        case RandomCursor::RANDOM_CLOCKS:
+            random_clocks = !random_clocks;
+            return;
+        case RandomCursor::RANDOM_MOD_MARKS:
+            random_mod_marks = !random_mod_marks;
+            return;
+        case RandomCursor::RANDOM_RETRIGGER_LEVELS:
+            random_retrigger_levels = !random_retrigger_levels;
+            return;
+        case RandomCursor::RANDOM_GATE_LENGTHS:
+            random_gate_lengths = !random_gate_lengths;
+            return;
+        case RandomCursor::RANDOM_PROBABILITIES:
+            random_probabilities = !random_probabilities;
+            return;
+        }
+    }
+
+    if (linked_cursor == LinkedCursor::UNLINK) {
+        // Unlink and return to the main view
+        EnvSeqManager::SetLink(hemisphere, false);
+        linked_cursor = LinkedCursor::MAX_LINKED_CURSOR;
+        return;
+    }
+
+    if (linked_cursor != LinkedCursor::MAX_LINKED_CURSOR || random_menu_active) {
+        // Keep other view open and toggle the cursor so it edits the current option
+        CursorToggle();
+        return;
+    }
+
+    switch (cursor) {
+    case EnvSeqCursor::LINK:
+        // Link and open linked view
+        EnvSeqManager::SetLink(hemisphere, true);
+        linked_cursor = LinkedCursor::UNLINK;
+        return;
+
+    case EnvSeqCursor::RANDOM:
+        // Open random view
+        random_menu_active = true;
+        random_menu_cursor.Init(0, RandomCursor::MAX_RANDOM_CURSOR - 1);
+        random_menu_cursor.Scroll(RandomCursor::RANDOM_APPLY);
+        return;
+
+    case EnvSeqCursor::TRIGGER2:
+        trigger2 = !trigger2;
+        return;
+
+    case EnvSeqCursor::RESET:
+        Reset();
+        return;
+    case EnvSeqCursor::INIT:
+        init_steps();
+        return;
+
+    case EnvSeqCursor::STEP_PARAM_VALUE:
+        switch (step_param_cursor) {
+        case StepParamCursor::STEP_PARAM_WAVEFORM_REVERT:
+            steps[step_view].waveform_revert = !steps[step_view].waveform_revert;
+            return;
+        case StepParamCursor::STEP_PARAM_WAVEFORM_INVERT:
+            steps[step_view].waveform_invert = !steps[step_view].waveform_invert;
+            return;
+        case StepParamCursor::STEP_PARAM_MOD_MARK:
+            steps[step_view].mod_mark = !steps[step_view].mod_mark;
+            return;
+        case StepParamCursor::STEP_PARAM_COPY:
+            EnvSeqManager::CopyStep(steps[step_view]);
+            return;
+        case StepParamCursor::STEP_PARAM_PASTE:
+            EnvSeqManager::PasteStep(steps[step_view]);
+            osc_draw_reinit = true;
+            if (step == step_view) {
+                osc_reinit = true;
+            }
+            return;
+        }
+
+      default:
+          CursorToggle();
+    }
+}
 
 void FLASHMEM EnvSeq::View() {
   draw_interface();

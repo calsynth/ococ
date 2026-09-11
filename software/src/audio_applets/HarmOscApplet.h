@@ -61,107 +61,7 @@ public:
         mixer.gain(0, 1.0f - m);
     }
 
-    void View() override {
-        gfxIcon(4 + 00, 26, NOTE_ICON);  // pitch
-        gfxIcon(4 + 16, 26, PhzIcons::speaker);  // level
-        gfxIcon(4 + 32, 26, BEAKER_ICON);  // mix
-        if (partial_param == 2) gfxIcon(4 + 48, 27, CV_ICON);  // cv mapping
-        else if (partial_param == 1) gfxIcon(4 + 49, 26, PhzIcons::tuner);  // partial ratios
-        else if (partial_param == 0) gfxIcon(4 + 47, 26, METER_ICON);  // amplitudes
-
-        switch (cursor) {
-            case OCTAVE:
-            case PITCH:
-            case PITCH_CV: {
-                gfxStartCursor(1, 15);
-                gfxPrintTuningIndicator(pitch);
-                gfxEndCursor(cursor == OCTAVE);
-
-                gfxStartCursor(11, 15);
-                gfxPrintPitchHz(pitch);
-                gfxEndCursor(cursor == PITCH);
-
-                gfxStartCursor();
-                gfxPrint(pitch_cv);
-                gfxEndCursor(cursor == PITCH_CV, false, pitch_cv.InputName());
-
-                gfxInvert(3, 25, 10, 10);
-                break;
-            }
-            case LEVEL:
-            case LEVEL_CV: {
-                // gfxStartCursor(1, 15);
-                gfxPrint(1, 15, "Lvl:");
-                gfxStartCursor();
-                graphics.printf("%3ddB", level);
-                gfxEndCursor(cursor == LEVEL);
-
-                gfxStartCursor();
-                gfxPrint(level_cv);
-                gfxEndCursor(cursor == LEVEL_CV, false, level_cv.InputName());
-
-                gfxInvert(3 + 16, 25, 10, 10);
-                break;
-            }
-            case MIX:
-            case MIX_CV: {
-                gfxPrint(1, 15, "Mix: ");
-                gfxStartCursor();
-                graphics.printf("%3d%%", mix);
-                gfxEndCursor(cursor == MIX);
-
-                gfxStartCursor();
-                gfxPrint(mix_cv);
-                gfxEndCursor(cursor == MIX_CV, false, mix_cv.InputName());
-
-                gfxInvert(3 + 32, 25, 10, 10);
-                break;
-            }
-            default: {
-                int shifted_val;
-                int int_part;
-                int dec_part;
-                gfxPos(1, 15);
-
-                if (partial_param == 2) {
-                    graphics.printf("C %X:", cursor - PARTIAL1);
-                    gfxStartCursor(48, 14);
-                    gfxPrint(amp_cv[cursor - PARTIAL1]);
-                    gfxEndCursor(cursor >= PARTIAL1, false, amp_cv[cursor - PARTIAL1].InputName());
-
-                } else if (partial_param == 1) {
-                    graphics.printf("R %X:", cursor - PARTIAL1);
-                    shifted_val = ((float)partial_ratios[cursor - PARTIAL1] / DETUNE_RESOLUTION) * 100;
-                    int_part = shifted_val / 100;
-                    dec_part = shifted_val % 100;
-
-                } else if (partial_param == 0) {
-                    graphics.printf("A %X:", cursor - PARTIAL1);
-                    shifted_val = ((float)amplitudes[cursor - PARTIAL1] / AMPLITUDE_RESOLUTION) * 100;
-                    int_part = shifted_val / 100;
-                    dec_part = shifted_val % 100;
-                }
-
-                if (partial_param < 2) graphics.printf("%2d.%02d", int_part, dec_part);
-                gfxInvert(3 + 48, 25, 10, 10);
-                break;
-            }
-        }
-
-        // draw parial sliders
-        for (int i = 0; i < MAX_PARTIALS; ++i) {
-            const int y0 = 36;
-            const int y1 = 64;
-            int x = i * (64 / MAX_PARTIALS) + 2;
-            float amp = constrain(((float)amplitudes[i] + (float)amp_cv[i].InRescaled(255)) / AMPLITUDE_RESOLUTION, 0.0f, 1.0f);
-            int y = amp * (y1 - y0);
-            gfxDottedLine(x, y0, x, y1, (uint8_t)2U);
-            if (cursor == PARTIAL1 + i) gfxInvert(x, y0, 1, y1 - y0);
-            gfxLine(x, y1-y, x, y1);
-        }
-
-        gfxDisplayInputMapEditor();
-    }
+    void View() override;
 
     void OnButtonPress() override {
         if (cursor >= PARTIAL1 && partial_param == 2) {
@@ -335,3 +235,105 @@ private:
         }
     }
 };
+
+FLASHMEM void HarmOscApplet::View() {
+    gfxIcon(4 + 00, 26, NOTE_ICON);  // pitch
+    gfxIcon(4 + 16, 26, PhzIcons::speaker);  // level
+    gfxIcon(4 + 32, 26, BEAKER_ICON);  // mix
+    if (partial_param == 2) gfxIcon(4 + 48, 27, CV_ICON);  // cv mapping
+    else if (partial_param == 1) gfxIcon(4 + 49, 26, PhzIcons::tuner);  // partial ratios
+    else if (partial_param == 0) gfxIcon(4 + 47, 26, METER_ICON);  // amplitudes
+
+    switch (cursor) {
+        case OCTAVE:
+        case PITCH:
+        case PITCH_CV: {
+            gfxStartCursor(1, 15);
+            gfxPrintTuningIndicator(pitch);
+            gfxEndCursor(cursor == OCTAVE);
+
+            gfxStartCursor(11, 15);
+            gfxPrintPitchHz(pitch);
+            gfxEndCursor(cursor == PITCH);
+
+            gfxStartCursor();
+            gfxPrint(pitch_cv);
+            gfxEndCursor(cursor == PITCH_CV, false, pitch_cv.InputName());
+
+            gfxInvert(3, 25, 10, 10);
+            break;
+        }
+        case LEVEL:
+        case LEVEL_CV: {
+            // gfxStartCursor(1, 15);
+            gfxPrint(1, 15, "Lvl:");
+            gfxStartCursor();
+            graphics.printf("%3ddB", level);
+            gfxEndCursor(cursor == LEVEL);
+
+            gfxStartCursor();
+            gfxPrint(level_cv);
+            gfxEndCursor(cursor == LEVEL_CV, false, level_cv.InputName());
+
+            gfxInvert(3 + 16, 25, 10, 10);
+            break;
+        }
+        case MIX:
+        case MIX_CV: {
+            gfxPrint(1, 15, "Mix: ");
+            gfxStartCursor();
+            graphics.printf("%3d%%", mix);
+            gfxEndCursor(cursor == MIX);
+
+            gfxStartCursor();
+            gfxPrint(mix_cv);
+            gfxEndCursor(cursor == MIX_CV, false, mix_cv.InputName());
+
+            gfxInvert(3 + 32, 25, 10, 10);
+            break;
+        }
+        default: {
+            int shifted_val;
+            int int_part;
+            int dec_part;
+            gfxPos(1, 15);
+
+            if (partial_param == 2) {
+                graphics.printf("C %X:", cursor - PARTIAL1);
+                gfxStartCursor(48, 14);
+                gfxPrint(amp_cv[cursor - PARTIAL1]);
+                gfxEndCursor(cursor >= PARTIAL1, false, amp_cv[cursor - PARTIAL1].InputName());
+
+            } else if (partial_param == 1) {
+                graphics.printf("R %X:", cursor - PARTIAL1);
+                shifted_val = ((float)partial_ratios[cursor - PARTIAL1] / DETUNE_RESOLUTION) * 100;
+                int_part = shifted_val / 100;
+                dec_part = shifted_val % 100;
+
+            } else if (partial_param == 0) {
+                graphics.printf("A %X:", cursor - PARTIAL1);
+                shifted_val = ((float)amplitudes[cursor - PARTIAL1] / AMPLITUDE_RESOLUTION) * 100;
+                int_part = shifted_val / 100;
+                dec_part = shifted_val % 100;
+            }
+
+            if (partial_param < 2) graphics.printf("%2d.%02d", int_part, dec_part);
+            gfxInvert(3 + 48, 25, 10, 10);
+            break;
+        }
+    }
+
+    // draw parial sliders
+    for (int i = 0; i < MAX_PARTIALS; ++i) {
+        const int y0 = 36;
+        const int y1 = 64;
+        int x = i * (64 / MAX_PARTIALS) + 2;
+        float amp = constrain(((float)amplitudes[i] + (float)amp_cv[i].InRescaled(255)) / AMPLITUDE_RESOLUTION, 0.0f, 1.0f);
+        int y = amp * (y1 - y0);
+        gfxDottedLine(x, y0, x, y1, (uint8_t)2U);
+        if (cursor == PARTIAL1 + i) gfxInvert(x, y0, 1, y1 - y0);
+        gfxLine(x, y1-y, x, y1);
+    }
+
+    gfxDisplayInputMapEditor();
+}

@@ -437,7 +437,7 @@ namespace HS {
       if (editing) gfxInvert(82, y - 1, 45, 10);
     }
   }
-  void DrawPopup(const int config_cursor, const int preset_id, const bool blink) {
+  FLASHMEM void DrawPopup(const int config_cursor, const int preset_id, const bool blink) {
 
     enum ConfigCursor {
         DELETE_PRESET,

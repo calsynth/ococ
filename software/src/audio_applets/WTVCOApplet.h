@@ -6,31 +6,7 @@ public:
         return "WTVCO";
     }
 
-    void Start() override {
-        sd_ready = CheckSD();
-
-        waveform[A] = WAVE_SINE;
-        waveform[B] = WAVE_TRIANGLE;
-        waveform[C] = WAVE_PULSE;
-        for (int w = A; w <= C; ++w) GenerateWaveTable(w);
-
-        synth.arbitraryWaveform(wavetable[OUT], AUDIO_SAMPLE_RATE_EXACT / 2);
-        synth.amplitude(1.0f);
-        synth.begin(WAVEFORM_ARBITRARY);
-
-        vca_cv.Acquire();
-        vca_cv.Method(INTERPOLATION_LINEAR);
-        vca.rectify(true);
-
-        PatchCable(input_stream, 0, mixer, 0);
-        PatchCable(vca_cv, 0, vca, 1);
-        PatchCable(synth, 0, vca, 0);
-        PatchCable(vca, 0, mixer, 1);
-        PatchCable(mixer, 0, output_stream, 0);
-
-        mixer.gain(0, 1.0f);
-        mixer.gain(1, 1.0f);
-    }
+    void Start() override;
 
     void Unload() override {
         AllowRestart();
@@ -63,16 +39,7 @@ public:
         mixer.gain(0, 1.0f - m);
     }
 
-    void View() override {
-        if (cursor > WAVEFORM_LAST) {
-            DrawParams();
-        } else {
-            DrawWaveMenu();
-        }
-        DrawScope();
-        DrawSelector();
-        gfxDisplayInputMapEditor();
-    }
+    void View() override;
 
     void OnButtonPress() override {
         userwave_select = false;
@@ -607,3 +574,40 @@ private:
         return ext && strcasecmp(ext, ".raw") == 0;
     }
 };
+
+FLASHMEM void WTVCOApplet::View() {
+    if (cursor > WAVEFORM_LAST) {
+        DrawParams();
+    } else {
+        DrawWaveMenu();
+    }
+    DrawScope();
+    DrawSelector();
+    gfxDisplayInputMapEditor();
+}
+
+FLASHMEM void WTVCOApplet::Start() {
+    sd_ready = CheckSD();
+
+    waveform[A] = WAVE_SINE;
+    waveform[B] = WAVE_TRIANGLE;
+    waveform[C] = WAVE_PULSE;
+    for (int w = A; w <= C; ++w) GenerateWaveTable(w);
+
+    synth.arbitraryWaveform(wavetable[OUT], AUDIO_SAMPLE_RATE_EXACT / 2);
+    synth.amplitude(1.0f);
+    synth.begin(WAVEFORM_ARBITRARY);
+
+    vca_cv.Acquire();
+    vca_cv.Method(INTERPOLATION_LINEAR);
+    vca.rectify(true);
+
+    PatchCable(input_stream, 0, mixer, 0);
+    PatchCable(vca_cv, 0, vca, 1);
+    PatchCable(synth, 0, vca, 0);
+    PatchCable(vca, 0, mixer, 1);
+    PatchCable(mixer, 0, output_stream, 0);
+
+    mixer.gain(0, 1.0f);
+    mixer.gain(1, 1.0f);
+}

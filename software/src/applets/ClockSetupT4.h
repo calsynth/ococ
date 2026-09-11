@@ -173,14 +173,7 @@ public:
         }
       }
     }
-    void View() {
-      if (OC::CORE::ticks - view_tick > 1000) {
-        slide_anim = SLIDEOUT_TIME;
-      }
-      view_tick = OC::CORE::ticks;
-      if (cursor >= OUTSKIP1) DrawIndicator();
-      DrawInterface();
-    }
+    void View();
 
     void OnButtonPress() {
         if (!EditMode()) { // special cases for toggle buttons
@@ -591,5 +584,14 @@ private:
         }
     }
 };
+
+FLASHMEM void ClockSetup::View() {
+  if (OC::CORE::ticks - view_tick > 1000) {
+    slide_anim = SLIDEOUT_TIME;
+  }
+  view_tick = OC::CORE::ticks;
+  if (cursor >= OUTSKIP1) DrawIndicator();
+  DrawInterface();
+}
 
 ClockSetup ClockSetup_instance;

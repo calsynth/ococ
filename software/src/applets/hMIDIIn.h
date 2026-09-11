@@ -94,31 +94,7 @@ public:
         }
     }
 
-    void View() {
-        switch (cursor) {
-            default:
-            case hMIDIIn_A_MIDI_CHANNEL:
-            case hMIDIIn_A_OUTPUT_MODE:
-            case hMIDIIn_A_POLY_VOICE:
-            case hMIDIIn_B_MIDI_CHANNEL:
-            case hMIDIIn_B_OUTPUT_MODE:
-            case hMIDIIn_B_POLY_VOICE:
-            case MAP_A_RANGELOW:
-            case MAP_A_RANGEHIGH:
-            case MAP_B_RANGELOW:
-            case MAP_B_RANGEHIGH:
-                DrawChannelPage();
-                DrawMonitor();
-                break;
-            case hMIDIIn_GLOBAL_POLY_MODE:
-            case hMIDIIn_GLOBAL_PROG_CHANGE_CHANNEL:
-                DrawGlobalPage();
-                break;
-            case hMIDIIn_LOG_VIEW:
-                DrawLog();
-                break;
-        }
-    }
+    void View();
 
     void AuxButton() override {
       switch (cursor) {
@@ -388,4 +364,30 @@ private:
         }
     }
 };
+
+FLASHMEM void hMIDIIn::View() {
+    switch (cursor) {
+        default:
+        case hMIDIIn_A_MIDI_CHANNEL:
+        case hMIDIIn_A_OUTPUT_MODE:
+        case hMIDIIn_A_POLY_VOICE:
+        case hMIDIIn_B_MIDI_CHANNEL:
+        case hMIDIIn_B_OUTPUT_MODE:
+        case hMIDIIn_B_POLY_VOICE:
+        case MAP_A_RANGELOW:
+        case MAP_A_RANGEHIGH:
+        case MAP_B_RANGELOW:
+        case MAP_B_RANGEHIGH:
+            DrawChannelPage();
+            DrawMonitor();
+            break;
+        case hMIDIIn_GLOBAL_POLY_MODE:
+        case hMIDIIn_GLOBAL_PROG_CHANGE_CHANNEL:
+            DrawGlobalPage();
+            break;
+        case hMIDIIn_LOG_VIEW:
+            DrawLog();
+            break;
+    }
+}
 #endif

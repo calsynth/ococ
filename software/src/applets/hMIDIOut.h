@@ -158,11 +158,7 @@ public:
         }
     }
 
-    void View() {
-        DrawMonitor();
-        if (cursor == LOG_VIEW) DrawLog();
-        else DrawSelector();
-    }
+    void View();
 
     void AuxButton() {
       if (cursor == TRANSPOSE) {
@@ -438,4 +434,10 @@ private:
       }
     }
 };
+
+FLASHMEM void hMIDIOut::View() {
+    DrawMonitor();
+    if (cursor == LOG_VIEW) DrawLog();
+    else DrawSelector();
+}
 

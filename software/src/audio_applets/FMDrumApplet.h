@@ -11,74 +11,7 @@ public:
     AudioStream* InputStream()  override { return &input_stream; }
     AudioStream* OutputStream() override { return &output_mixer; }
 
-    void Start() override {
-        // Acquire interpolating streams
-        fm_idx_stream.Acquire();
-        fm_idx_stream.Method(INTERPOLATION_LINEAR);
-        amp_env_stream.Acquire();
-        amp_env_stream.Method(INTERPOLATION_LINEAR);
-        noise_env_stream.Acquire();
-        noise_env_stream.Method(INTERPOLATION_LINEAR);
-
-        // Modulator: simple sine, phase-resettable
-        modulator.begin(WAVEFORM_SINE);
-        modulator.amplitude(1.0f);
-
-        // Carrier: PM synthesis, max depth 1800 degrees = 5π rad
-        carrier.begin(WAVEFORM_SINE);
-        carrier.amplitude(1.0f);
-        carrier.phaseModulation(1800.0f);
-
-        // mod_vca: scales modulator by FM index envelope
-        mod_vca.bias(0.0f);
-        mod_vca.level(1.0f);
-        mod_vca.rectify(true);
-
-        // amp_vca: scales carrier by amplitude envelope
-        amp_vca.bias(0.0f);
-        amp_vca.level(1.0f);
-        amp_vca.rectify(true);
-
-        // Noise: white → fixed ~1kHz HPF → VCA
-        noise_gen.amplitude(1.0f);
-        noise_hpf.frequency(1000.0f);
-        noise_hpf.resonance(0.707f);
-        noise_hpf.octaveControl(0.0f);
-
-        noise_vca.bias(0.0f);
-        noise_vca.level(1.0f);
-        noise_vca.rectify(true);
-
-        // Output mixer: gain[0] and gain[2] fixed, gain[1] updated in Controller
-        output_mixer.gain(0, 1.0f);
-        output_mixer.gain(1, 0.0f);
-        output_mixer.gain(2, 1.0f);
-
-        // --- Cable routing ---
-        // FM chain
-        PatchCable(modulator,       0, mod_vca,      0);
-        PatchCable(fm_idx_stream,   0, mod_vca,      1);
-        PatchCable(mod_vca,         0, carrier,      0);  // PM mod input
-
-        // Carrier → amp envelope → mixer ch0
-        PatchCable(carrier,         0, amp_vca,      0);
-        PatchCable(amp_env_stream,  0, amp_vca,      1);
-        PatchCable(amp_vca,         0, output_mixer, 0);
-
-        // Noise chain: noise → HPF → noise VCA → mixer ch1
-        PatchCable(noise_gen,       0, noise_hpf,    0);
-        PatchCable(noise_hpf,       2, noise_vca,    0);  // output 2 = HP
-        PatchCable(noise_env_stream,0, noise_vca,    1);
-        PatchCable(noise_vca,       0, output_mixer, 1);
-
-        // Passthrough: audio in → mixer ch2 (level via mixer gain)
-        PatchCable(input_stream,    0, output_mixer, 2);
-
-        // Prime streams to silence
-        fm_idx_stream.Push(float_to_q15(0.0f));
-        amp_env_stream.Push(float_to_q15(0.0f));
-        noise_env_stream.Push(float_to_q15(0.0f));
-    }
+    void Start() override;
 
     void Unload() override {
         fm_idx_stream.Release();
@@ -161,71 +94,9 @@ public:
         output_mixer.gain(1, constrain(eff_noi * mix_gain * 0.01f, 0.f, 2.f));
     }
 
-    void View() override {
-        if (trigger_flash)
-            gfxIcon(56, 2, ZAP_ICON);
+    void View() override;
 
-        // Draw 6 visible rows from scroll_top (scroll_top is a row index)
-        for (int i = 0; i < 6; ++i) {
-            int row = scroll_top + i;
-            if (row >= NUM_ROWS) break;
-            DrawRow(row, 15 + i * 8);
-        }
-
-        // Scroll arrows
-        if (scroll_top > 0)
-            gfxIcon(57, 14, UP_ICON);
-        if (scroll_top + 6 < NUM_ROWS)
-            gfxIcon(57, 56, DOWN_ICON);
-
-        gfxDisplayInputMapEditor();
-    }
-
-    void OnEncoderMove(int direction) override {
-        if (!EditMode()) {
-            MoveCursor(cursor, direction, NUM_CURSORS - 1);
-            // Scroll to keep active row visible
-            int row = cursorToRow(cursor);
-            if (row < scroll_top)
-                scroll_top = row;
-            else if (row >= scroll_top + 6)
-                scroll_top = row - 5;
-            scroll_top = constrain(scroll_top, 0, NUM_ROWS - 6);
-            return;
-        }
-
-        if (EditSelectedInputMap(direction)) return;
-
-        switch (cursor) {
-            case TRG:
-                trg.ChangeSource(direction);
-                break;
-            case PRESET:
-                if (preset_idx > NUM_PRESETS) preset_idx = (direction > 0) ? 0 : NUM_PRESETS;
-                else preset_idx = (preset_idx + (NUM_PRESETS + 1) + direction) % (NUM_PRESETS + 1);
-                LoadPreset(preset_idx);
-                break;
-            case PIT:    pitch_hz = constrain(pitch_hz + direction * 5, 10, 2000); break;
-            case DCY:    dec      = constrain(dec + direction * (dec>>1), 10, 4000); break;
-            case SWP:    swp      = constrain(swp + direction, 0, 100); break;
-            case RTO:    rto      = constrain(rto + direction, 1, 100); break;
-            case FMI:    fmi      = constrain(fmi + direction, 0, 100); break;
-            case FMD:    fmd      = constrain(fmd + direction * 10, 10, 4000); break;
-            case NOI:    noi      = constrain(noi + direction, 0, 100); break;
-            case NDC:    ndc      = constrain(ndc + direction * 5, 5, 4000); break;
-            case MIX:    mix      = constrain(mix + direction, 0, 100); break;
-            case CV_PIT: pitch_cv.ChangeSource(direction); break;
-            case CV_DCY: dec_cv.ChangeSource(direction);   break;
-            case CV_SWP: swp_cv.ChangeSource(direction);   break;
-            case CV_RTO: rto_cv.ChangeSource(direction);   break;
-            case CV_FMI: fmi_cv.ChangeSource(direction);   break;
-            case CV_FMD: fmd_cv.ChangeSource(direction);   break;
-            case CV_NOI: noi_cv.ChangeSource(direction);   break;
-            case CV_NDC: ndc_cv.ChangeSource(direction);   break;
-            case CV_MIX: mix_cv.ChangeSource(direction);   break;
-            default: break;
-        }
-    }
+    void OnEncoderMove(int direction) override;
 
     void OnButtonPress() override {
         if (CheckEditInputMapPress(cursor,
@@ -494,5 +365,140 @@ private:
         }
     }
 };
+
+FLASHMEM void FMDrumApplet::OnEncoderMove(int direction) {
+    if (!EditMode()) {
+        MoveCursor(cursor, direction, NUM_CURSORS - 1);
+        // Scroll to keep active row visible
+        int row = cursorToRow(cursor);
+        if (row < scroll_top)
+            scroll_top = row;
+        else if (row >= scroll_top + 6)
+            scroll_top = row - 5;
+        scroll_top = constrain(scroll_top, 0, NUM_ROWS - 6);
+        return;
+    }
+
+    if (EditSelectedInputMap(direction)) return;
+
+    switch (cursor) {
+        case TRG:
+            trg.ChangeSource(direction);
+            break;
+        case PRESET:
+            if (preset_idx > NUM_PRESETS) preset_idx = (direction > 0) ? 0 : NUM_PRESETS;
+            else preset_idx = (preset_idx + (NUM_PRESETS + 1) + direction) % (NUM_PRESETS + 1);
+            LoadPreset(preset_idx);
+            break;
+        case PIT:    pitch_hz = constrain(pitch_hz + direction * 5, 10, 2000); break;
+        case DCY:    dec      = constrain(dec + direction * (dec>>1), 10, 4000); break;
+        case SWP:    swp      = constrain(swp + direction, 0, 100); break;
+        case RTO:    rto      = constrain(rto + direction, 1, 100); break;
+        case FMI:    fmi      = constrain(fmi + direction, 0, 100); break;
+        case FMD:    fmd      = constrain(fmd + direction * 10, 10, 4000); break;
+        case NOI:    noi      = constrain(noi + direction, 0, 100); break;
+        case NDC:    ndc      = constrain(ndc + direction * 5, 5, 4000); break;
+        case MIX:    mix      = constrain(mix + direction, 0, 100); break;
+        case CV_PIT: pitch_cv.ChangeSource(direction); break;
+        case CV_DCY: dec_cv.ChangeSource(direction);   break;
+        case CV_SWP: swp_cv.ChangeSource(direction);   break;
+        case CV_RTO: rto_cv.ChangeSource(direction);   break;
+        case CV_FMI: fmi_cv.ChangeSource(direction);   break;
+        case CV_FMD: fmd_cv.ChangeSource(direction);   break;
+        case CV_NOI: noi_cv.ChangeSource(direction);   break;
+        case CV_NDC: ndc_cv.ChangeSource(direction);   break;
+        case CV_MIX: mix_cv.ChangeSource(direction);   break;
+        default: break;
+    }
+}
+
+FLASHMEM void FMDrumApplet::View() {
+    if (trigger_flash)
+        gfxIcon(56, 2, ZAP_ICON);
+
+    // Draw 6 visible rows from scroll_top (scroll_top is a row index)
+    for (int i = 0; i < 6; ++i) {
+        int row = scroll_top + i;
+        if (row >= NUM_ROWS) break;
+        DrawRow(row, 15 + i * 8);
+    }
+
+    // Scroll arrows
+    if (scroll_top > 0)
+        gfxIcon(57, 14, UP_ICON);
+    if (scroll_top + 6 < NUM_ROWS)
+        gfxIcon(57, 56, DOWN_ICON);
+
+    gfxDisplayInputMapEditor();
+}
+
+FLASHMEM void FMDrumApplet::Start() {
+    // Acquire interpolating streams
+    fm_idx_stream.Acquire();
+    fm_idx_stream.Method(INTERPOLATION_LINEAR);
+    amp_env_stream.Acquire();
+    amp_env_stream.Method(INTERPOLATION_LINEAR);
+    noise_env_stream.Acquire();
+    noise_env_stream.Method(INTERPOLATION_LINEAR);
+
+    // Modulator: simple sine, phase-resettable
+    modulator.begin(WAVEFORM_SINE);
+    modulator.amplitude(1.0f);
+
+    // Carrier: PM synthesis, max depth 1800 degrees = 5π rad
+    carrier.begin(WAVEFORM_SINE);
+    carrier.amplitude(1.0f);
+    carrier.phaseModulation(1800.0f);
+
+    // mod_vca: scales modulator by FM index envelope
+    mod_vca.bias(0.0f);
+    mod_vca.level(1.0f);
+    mod_vca.rectify(true);
+
+    // amp_vca: scales carrier by amplitude envelope
+    amp_vca.bias(0.0f);
+    amp_vca.level(1.0f);
+    amp_vca.rectify(true);
+
+    // Noise: white → fixed ~1kHz HPF → VCA
+    noise_gen.amplitude(1.0f);
+    noise_hpf.frequency(1000.0f);
+    noise_hpf.resonance(0.707f);
+    noise_hpf.octaveControl(0.0f);
+
+    noise_vca.bias(0.0f);
+    noise_vca.level(1.0f);
+    noise_vca.rectify(true);
+
+    // Output mixer: gain[0] and gain[2] fixed, gain[1] updated in Controller
+    output_mixer.gain(0, 1.0f);
+    output_mixer.gain(1, 0.0f);
+    output_mixer.gain(2, 1.0f);
+
+    // --- Cable routing ---
+    // FM chain
+    PatchCable(modulator,       0, mod_vca,      0);
+    PatchCable(fm_idx_stream,   0, mod_vca,      1);
+    PatchCable(mod_vca,         0, carrier,      0);  // PM mod input
+
+    // Carrier → amp envelope → mixer ch0
+    PatchCable(carrier,         0, amp_vca,      0);
+    PatchCable(amp_env_stream,  0, amp_vca,      1);
+    PatchCable(amp_vca,         0, output_mixer, 0);
+
+    // Noise chain: noise → HPF → noise VCA → mixer ch1
+    PatchCable(noise_gen,       0, noise_hpf,    0);
+    PatchCable(noise_hpf,       2, noise_vca,    0);  // output 2 = HP
+    PatchCable(noise_env_stream,0, noise_vca,    1);
+    PatchCable(noise_vca,       0, output_mixer, 1);
+
+    // Passthrough: audio in → mixer ch2 (level via mixer gain)
+    PatchCable(input_stream,    0, output_mixer, 2);
+
+    // Prime streams to silence
+    fm_idx_stream.Push(float_to_q15(0.0f));
+    amp_env_stream.Push(float_to_q15(0.0f));
+    noise_env_stream.Push(float_to_q15(0.0f));
+}
 
 constexpr FMDrumApplet::FMDrumPreset FMDrumApplet::PRESETS[FMDrumApplet::NUM_PRESETS];
