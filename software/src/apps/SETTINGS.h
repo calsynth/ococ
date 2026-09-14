@@ -602,8 +602,13 @@ FLASHMEM void AppSettings::View() const {
   gfxPrint(100, 0, "T3.2");
   #endif
 
+#ifdef OCOC
+  gfxIcon(0, 15, ZAP_ICON);     // OCOC: fixed sun both sides, no icon roulette
+  gfxIcon(120, 15, ZAP_ICON);
+#else
   gfxIcon(0, 15, iconography[pick_left]);
   gfxIcon(120, 15, iconography[pick_right]);
+#endif
   #ifdef PEWPEWPEW
   gfxPrint(21, 15, "PEW! PEW! PEW!");
   #else

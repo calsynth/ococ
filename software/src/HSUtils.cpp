@@ -491,9 +491,13 @@ namespace HS {
       case MENU_POPUP:
         gfxPrint(78, 30, "Load");
         gfxPrint(78, 40, config_cursor == AUTO_SAVE ? "(auto)" : "Save");
+#ifdef OCOC
+        gfxIcon(86, 50, ZAP_ICON);   // OCOC: sun only, no snowflake/bolt trio
+#else
         gfxIcon(78, 50, PhzIcons::snowflakeA);
         gfxIcon(86, 50, ZAP_ICON);
         gfxIcon(94, 50, PhzIcons::snowflakeB);
+#endif
         //gfxPrint(78, 50, "????");
 
         switch (config_cursor) {
