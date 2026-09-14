@@ -2,16 +2,16 @@
 // Teensy Audio Library wrapper for AbyssCore (see blackhole_core.h).
 // Stereo in, stereo out, wet-only (the applet handles dry/wet mixing).
 //
-// Delay memory (~150 KB at 48 kHz) is allocated in one arena, preferring
-// the fast RAM2 heap; PSRAM (EXTMEM) is used only as a fallback.
+// Delay memory (~150 KB at 48 kHz) is allocated in one arena on the RAM2
+// heap. There is deliberately NO PSRAM fallback (OCOC v0.1, 2026-09-14): a
+// PSRAM-resident instance costs >50 % CPU for the tank's scattered reads, and
+// on the bench a third instance loaded that way took the module down with a
+// hard fault in the USB audio receive path. Out of RAM2 = the applet refuses
+// to start and says so.
 
 #include <Arduino.h>
 #include <AudioStream.h>
 #include "abyss_core.h"
-
-extern "C" uint8_t external_psram_size;
-extern "C" void* extmem_malloc(size_t);
-extern "C" void extmem_free(void* ptr);
 
 class AudioEffectAbyssReverb : public AudioStream {
 public:
@@ -19,18 +19,12 @@ public:
   ~AudioEffectAbyssReverb() { end(); }
 
   // Allocate buffers and start processing. Returns false if out of memory.
-  // Prefers the RAM2 heap: the tank does ~30 scattered reads per sample, and
-  // PSRAM cache misses on those made v1 cost >50% CPU. PSRAM is kept as a
-  // fallback so the applet still loads when RAM2 is crowded.
+  // RAM2 heap only: the tank does ~30 scattered reads per sample, and PSRAM
+  // cache misses on those made v1 cost >50% CPU (see the header comment).
   bool begin() {
     if (arena) return core.Ready();
     const size_t bytes = core.RequiredBytes(AUDIO_SAMPLE_RATE_EXACT);
     arena = malloc(bytes);
-    arena_in_psram = false;
-    if (!arena && external_psram_size > 0) {
-      arena = extmem_malloc(bytes);
-      arena_in_psram = (arena != nullptr);
-    }
     if (!arena) return false;
     const bool ok = core.Init(AUDIO_SAMPLE_RATE_EXACT, arena, bytes);
     if (!ok) {
@@ -107,14 +101,12 @@ public:
 private:
   void FreeArena() {
     if (!arena) return;
-    if (arena_in_psram) extmem_free(arena);
-    else free(arena);
+    free(arena);
     arena = nullptr;
   }
 
   audio_block_t* inputQueueArray[2];
   AbyssCore core;
   void* arena = nullptr;
-  bool arena_in_psram = false;
   float in_gain = 1.0f;
 };
