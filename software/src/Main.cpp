@@ -185,25 +185,25 @@ void BootMenu() {
 
     GRAPHICS_BEGIN_FRAME(true);
     graphics.setPrintPos(1, 5);
-    graphics.print("USB Device Mode:");
+    graphics.print("Choose firmware:");
 
     graphics.setPrintPos(1, 15);
-    graphics.print("A: MIDI + Audio");
+    graphics.print("A: OCOC MIDI + Audio");
     if (any_held && 0 == OC::calibration_data.bootchoice()) {
       graphics.invertRect(1, 15, 127, 9);
     }
     graphics.setPrintPos(1, 25);
-    graphics.print("B: MIDI");
+    graphics.print("B: OCOC MIDI");
     if (any_held && 1 == OC::calibration_data.bootchoice()) {
       graphics.invertRect(1, 25, 127, 9);
     }
     graphics.setPrintPos(1, 35);
-    graphics.print("X: MTP + O_C Stock");
+    graphics.print("X: Phazerville +Audio");
     if (any_held && 2 == OC::calibration_data.bootchoice()) {
       graphics.invertRect(1, 35, 127, 9);
     }
     graphics.setPrintPos(1, 45);
-    graphics.print("Y: (HW Debug)");
+    graphics.print("Y: Phazerville MIDI");
     if (any_held && 3 == OC::calibration_data.bootchoice()) {
       graphics.invertRect(1, 45, 127, 9);
     }
@@ -322,13 +322,9 @@ void setup() {
     BootMenu();
   }
 
-  if (OC::calibration_data.bootchoice() == 3) {
-    for (int i = 0; i < DAC_CHANNEL_COUNT; ++i) {
-      // -3V to +4V
-      OC::DAC::set_octave(DAC_CHANNEL(i), i-3);
-    }
-    OC::ui.DebugStats();
-  } else if (OC::calibration_data.bootchoice()) {
+  // OCOC: slot 3 (Y) is a real firmware slot (stock Phazerville, MIDI), not the
+  // upstream hardware-debug mode; every non-zero choice jumps.
+  if (OC::calibration_data.bootchoice()) {
     GRAPHICS_BEGIN_FRAME(true);
     graphics.setPrintPos(1, 28);
     graphics.print("Switching to alt mode!");

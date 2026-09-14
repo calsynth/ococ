@@ -75,8 +75,10 @@ constexpr Registry mono_applets = Registry<HemisphereAudioApplet, NUM_SLOTS * 2
     , DeclareFancyApplet<LadderApplet<MONO>>
     , DeclareFancyApplet<FilterFolderApplet<MONO>>
     , DeclareFancyApplet<DelayApplet<MONO>>
+#ifdef OCOC
     , DeclareFancyApplet<AbyssApplet<MONO>>
     , DeclareFancyApplet<AnimorfApplet<MONO>>
+#endif
     , DeclareFancyApplet<PhazerApplet>
     , DeclareFancyApplet<ReverbApplet>
     , DeclareFancyApplet<BungverbApplet>
@@ -104,8 +106,10 @@ constexpr Registry stereo_applets = Registry<HemisphereAudioApplet, NUM_SLOTS
   , DeclareFancyApplet<DynamicsApplet<STEREO>>
   , DeclareFancyApplet<ThreeBandzApplet<STEREO>>
   , DeclareFancyApplet<DelayApplet<STEREO>>
+#ifdef OCOC
   , DeclareFancyApplet<AbyssApplet<STEREO>>
   , DeclareFancyApplet<AnimorfApplet<STEREO>>
+#endif
   , DeclareFancyApplet<LadderApplet<STEREO>>
   , DeclareFancyApplet<FilterFolderApplet<STEREO>>
   , DeclareFancyApplet<WavPlayerApplet<STEREO>>

@@ -221,7 +221,11 @@ UiMode Ui::Splashscreen(bool &reset_settings, uint8_t phase) {
       GRAPHICS_BEGIN_FRAME(true);
 
       menu::DefaultTitleBar::Draw();
+#ifdef OCOC
       graphics.print(OC::Strings::RELEASE_NAME);   // OCOC: product name + version, not the hardware name
+#else
+      graphics.print( DAC_is_inverted? OC::Strings::NAME_NLM : OC::Strings::NAME);
+#endif
       weegfx::coord_t y = menu::CalcLineY(0);
 
       graphics.setPrintPos(menu::kIndentDx, y + menu::kTextDy);
@@ -242,8 +246,15 @@ UiMode Ui::Splashscreen(bool &reset_settings, uint8_t phase) {
         y += menu::kMenuLineH;
         graphics.setPrintPos(menu::kIndentDx, y + menu::kTextDy);
       }
+#ifdef OCOC
       graphics.print(OC::Strings::BUILD_TAG);   // OCOC: build id only; the PSv2.0.1 base is on Setup/About
+#else
+      graphics.print(OC::Strings::VERSION);
+      graphics.print(" ");
+      graphics.print(OC::Strings::BUILD_TAG);
+#endif
 
+#ifndef OCOC   // OCOC: no icon roulette, no zaps — name, version, load bar only
       const uint8_t *iconroulette[] = {
         PhzIcons::clockDivider, PhzIcons::clockSkip,
         PhzIcons::clock_warp_A, PhzIcons::clock_warp_B,
@@ -256,6 +267,7 @@ UiMode Ui::Splashscreen(bool &reset_settings, uint8_t phase) {
       // pew pew?
       for (int i = 0; i < 124; i+=8)
         graphics.drawBitmap8(i, 56, 8, iconroulette[pick]);
+#endif
 
       // chargin mah lazerrrr
       weegfx::coord_t w = timeout * 128 / SPLASHSCREEN_DELAY_MS;
@@ -263,7 +275,9 @@ UiMode Ui::Splashscreen(bool &reset_settings, uint8_t phase) {
       if (w > 128) w = 256 - w;
       graphics.invertRect(0, 56, w, 8);
 
+#ifndef OCOC
       ZapScreensaver();
+#endif
 
       /* fixes spurious button presses when booting ? */
       while (event_queue_.available())
@@ -284,6 +298,22 @@ UiMode Ui::Splashscreen(bool &reset_settings, uint8_t phase) {
         graphics.drawBitmap8(i*8%128 + random(2), i/16*8 + random(2), 8, flake_icon[random(3)]);
       }
       */
+#ifdef OCOC
+      // OCOC: plain welcome card, centred, no zaps (6 px fixed font, 128 px wide)
+      if (reset_settings) {
+        graphics.setPrintPos(31, 23);   // 11 chars
+        graphics.print("Time for a ");
+        graphics.setPrintPos(28, 33);   // 12 chars
+        graphics.print("Fresh Start!");
+      } else {
+        graphics.setPrintPos(19, 16);   // 15 chars = 90 px
+        graphics.print("WELCOME TO OCOC");
+        graphics.setPrintPos(25, 30);   // 13 chars = 78 px
+        graphics.print("A PHAZERVILLE");
+        graphics.setPrintPos(16, 40);   // 16 chars = 96 px
+        graphics.print("EXPERIMENTAL MOD");
+      }
+#else
       ZapScreensaver();
 
       graphics.clearRect(27, 22, 74, 22);
@@ -296,8 +326,9 @@ UiMode Ui::Splashscreen(bool &reset_settings, uint8_t phase) {
         graphics.setPrintPos(28, 23);
         graphics.print(" Welcome to");
         graphics.setPrintPos(28, 33);
-        graphics.print(OC::Strings::RELEASE_NAME);   // OCOC
+        graphics.print("Phazerville!");
       }
+#endif
       //graphics.print(OC::Strings::RELEASE_NAME);
 
       while (event_queue_.available())

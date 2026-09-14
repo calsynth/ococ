@@ -29,14 +29,19 @@ def after_build(source, target, env):
             version += item[1].strip('"')
     env.Replace(PROGNAME=f"o_C-phazerville-{version}-{git_rev}")
 
-    app_A = env.subst(".pio/build/T41/firmware.hex")
-    app_B = env.subst(".pio/build/T41_audio/firmware.hex")
-    app_X = env.subst(".pio/build/T41_MTP/firmware.hex")
-    # app_Y = env.subst("")
+    # OCOC four-slot package (2026-09-14): slot 0 (A) OCOC MIDI+Audio, slot 1 (B)
+    # OCOC MIDI, slot 2 (X) stock Phazerville MIDI+Audio, slot 3 (Y) stock
+    # Phazerville MIDI. Each env's linker script fixes its slot address.
+    app_A = env.subst(".pio/build/T41_audio/firmware.hex")
+    app_B = env.subst(".pio/build/T41/firmware.hex")
+    app_X = env.subst(".pio/build/T41_stock_audio/firmware.hex")
+    app_Y = env.subst(".pio/build/T41_stock/firmware.hex")
 
     out = env.subst("${PROGNAME}.hex")
 
     platform = env.PioPlatform()
-    subprocess.call([join(platform.get_package_dir("tool-sreccat") or "", "srec_cat"), app_A, "-Intel", app_B, "-Intel", app_X, "-Intel", "-o", out, "-Intel"])
+    subprocess.call([join(platform.get_package_dir("tool-sreccat") or "", "srec_cat"),
+                     app_A, "-Intel", app_B, "-Intel", app_X, "-Intel", app_Y, "-Intel",
+                     "-o", out, "-Intel"])
 
 env.AddPostAction("buildprog", after_build)

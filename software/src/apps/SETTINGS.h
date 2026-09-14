@@ -609,12 +609,22 @@ FLASHMEM void AppSettings::View() const {
   #else
   gfxPrint(12, 15, OC::Strings::RELEASE_NAME);
   #endif
+#ifdef OCOC
+  // OCOC: About shows OCOC's own info; the Phazerville base is credited in the README.
+  gfxIcon(0, 25, PhzIcons::full_book);
+  gfxPrint(10, 25, "Calsynth");
+  gfxIcon(0, 35, PhzIcons::runglBook);
+  gfxPrint(10, 35, OC::Strings::BUILD_TAG);
+  gfxIcon(0, 45, PhzIcons::frontBack);
+  gfxPrint(10, 45, "github.com/calsynth");
+#else
   gfxIcon(0, 25, PhzIcons::full_book);
   gfxPrint(10, 25, OC::Strings::VERSION);
   gfxIcon(0, 35, PhzIcons::runglBook);
   gfxPrint(10, 35, OC::Strings::BUILD_TAG);
   gfxIcon(0, 45, PhzIcons::frontBack);
   gfxPrint(10, 45, "github.com/djphazer");
+#endif
   gfxPrint(0, 55, reflash ? "[Reflash]" : "[CALIBRATE]   [RESET]");
 }
 

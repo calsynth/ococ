@@ -7,8 +7,14 @@
 // Edit these lines to create your own name.  The length must
 // match the number of characters in your custom name.
 
+#ifdef OCOC
+// OCOC slots enumerate as "OCOC" (MIDI port / serial port name in the OS).
+#define MIDI_NAME {'O','C','O','C'}
+#define MIDI_NAME_LEN 4
+#else
 #define MIDI_NAME {'P','h','a','z','e','r','v','i','l','l','e'}
 #define MIDI_NAME_LEN 11
+#endif
 
 // Do not change this part.  This exact format is required by USB.
 
