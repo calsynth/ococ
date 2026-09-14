@@ -77,7 +77,9 @@ constexpr Registry mono_applets = Registry<HemisphereAudioApplet, NUM_SLOTS * 2
     , DeclareFancyApplet<DelayApplet<MONO>>
 #ifdef OCOC
     , DeclareFancyApplet<AbyssApplet<MONO>>
-    , DeclareFancyApplet<AnimorfApplet<MONO>>
+    // Animorf withdrawn from OCOC v0.1 (bench 2026-09-14: output degrades into
+    // ring-mod-like distortion within ~90 s); returns once the DSP is fixed.
+    // , DeclareFancyApplet<AnimorfApplet<MONO>>
 #endif
     , DeclareFancyApplet<PhazerApplet>
     , DeclareFancyApplet<ReverbApplet>
@@ -108,7 +110,7 @@ constexpr Registry stereo_applets = Registry<HemisphereAudioApplet, NUM_SLOTS
   , DeclareFancyApplet<DelayApplet<STEREO>>
 #ifdef OCOC
   , DeclareFancyApplet<AbyssApplet<STEREO>>
-  , DeclareFancyApplet<AnimorfApplet<STEREO>>
+  // , DeclareFancyApplet<AnimorfApplet<STEREO>>   (withdrawn, see above)
 #endif
   , DeclareFancyApplet<LadderApplet<STEREO>>
   , DeclareFancyApplet<FilterFolderApplet<STEREO>>
