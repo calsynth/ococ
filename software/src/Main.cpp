@@ -43,7 +43,6 @@
 #include "src/drivers/display.h"
 #ifdef QUAD_CAPTURE
 #include "quad_capture.h" // 4-up Quadrants screen capture ('Q' command)
-#include "quad_capture_midi.h" // same capture over USB-MIDI SysEx (for iPad/iOS)
 #endif
 #include "src/drivers/ADC/OC_util_ADC.h"
 #include "util/util_debugpins.h"
@@ -384,10 +383,6 @@ void setup() {
 
   OC::app_switcher.current_app()->DispatchAppEvent(OC::APP_EVENT_RESUME);
 
-#ifdef QUAD_CAPTURE
-  QuadMidi::begin();   // register the SysEx capture handler (iPad/USB-MIDI path)
-#endif
-
   SERIAL_PRINTLN("[End of setup()]");
 }
 
@@ -693,9 +688,6 @@ void FASTRUN loop() {
       quad_send_time = 0;
       QuadCapture::service(128);
     }
-
-    // service any pending USB-MIDI SysEx capture request (iPad / Android path)
-    QuadMidi::service(RemoteControl);
 #endif // QUAD_CAPTURE
 
     // check for frame buffer to have capture data ready
