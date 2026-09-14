@@ -221,7 +221,7 @@ UiMode Ui::Splashscreen(bool &reset_settings, uint8_t phase) {
       GRAPHICS_BEGIN_FRAME(true);
 
       menu::DefaultTitleBar::Draw();
-      graphics.print( DAC_is_inverted? OC::Strings::NAME_NLM : OC::Strings::NAME);
+      graphics.print(OC::Strings::RELEASE_NAME);   // OCOC: product name + version, not the hardware name
       weegfx::coord_t y = menu::CalcLineY(0);
 
       graphics.setPrintPos(menu::kIndentDx, y + menu::kTextDy);
@@ -242,9 +242,7 @@ UiMode Ui::Splashscreen(bool &reset_settings, uint8_t phase) {
         y += menu::kMenuLineH;
         graphics.setPrintPos(menu::kIndentDx, y + menu::kTextDy);
       }
-      graphics.print(OC::Strings::VERSION);
-      graphics.print(" ");
-      graphics.print(OC::Strings::BUILD_TAG);
+      graphics.print(OC::Strings::BUILD_TAG);   // OCOC: build id only; the PSv2.0.1 base is on Setup/About
 
       const uint8_t *iconroulette[] = {
         PhzIcons::clockDivider, PhzIcons::clockSkip,
@@ -298,7 +296,7 @@ UiMode Ui::Splashscreen(bool &reset_settings, uint8_t phase) {
         graphics.setPrintPos(28, 23);
         graphics.print(" Welcome to");
         graphics.setPrintPos(28, 33);
-        graphics.print("Phazerville!");
+        graphics.print(OC::Strings::RELEASE_NAME);   // OCOC
       }
       //graphics.print(OC::Strings::RELEASE_NAME);
 

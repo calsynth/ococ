@@ -17,7 +17,7 @@ namespace OC {
 #endif
 
   // 17 char width                  |                 |
-  const char * const RELEASE_NAME = "Phazerville Suite";
+  const char * const RELEASE_NAME = "OCOC v0.1";  // OCOC: shown on the splash and Setup/About; upstream VERSION below it names the Phazerville base
   // TODO: array of alternate titles, one for every letter of the alphabet
 
 #if defined(VOR)
