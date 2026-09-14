@@ -8,6 +8,14 @@
 // on the bench a third instance loaded that way took the module down with a
 // hard fault in the USB audio receive path. Out of RAM2 = the applet refuses
 // to start and says so.
+//
+// ONE arena, shared by every instance (mono and stereo applets are separate
+// objects), claimed by whichever instance is running and KEPT across
+// Unload()/Start() — never freed. Freeing it on Unload left the heap with two
+// free regions each just under the arena size, so any small allocation in
+// between (a preset load instantiating applets) made the next Start() fail
+// with "Out of RAM!!" although total free RAM was unchanged (bench
+// 2026-09-14). One Abyss at a time, either variant; a second says Out of RAM.
 
 #include <Arduino.h>
 #include <AudioStream.h>
@@ -16,29 +24,32 @@
 class AudioEffectAbyssReverb : public AudioStream {
 public:
   AudioEffectAbyssReverb() : AudioStream(2, inputQueueArray) {}
-  ~AudioEffectAbyssReverb() { end(); }
+  ~AudioEffectAbyssReverb() { end(); }   // the shared arena outlives instances
 
   // Allocate buffers and start processing. Returns false if out of memory.
   // RAM2 heap only: the tank does ~30 scattered reads per sample, and PSRAM
   // cache misses on those made v1 cost >50% CPU (see the header comment).
   bool begin() {
-    if (arena) return core.Ready();
+    if (core.Ready()) return true;
+    if (shared_owner && shared_owner != this) return false;   // another Abyss is running
     const size_t bytes = core.RequiredBytes(AUDIO_SAMPLE_RATE_EXACT);
-    arena = malloc(bytes);
-    if (!arena) return false;
-    const bool ok = core.Init(AUDIO_SAMPLE_RATE_EXACT, arena, bytes);
-    if (!ok) {
-      FreeArena();
-      return false;
+    if (!shared_arena) {
+      shared_arena = malloc(bytes);
+      shared_bytes = shared_arena ? bytes : 0;
     }
+    if (!shared_arena) return false;
+    // Init re-carves the lines and clears them, so the held arena restarts clean.
+    if (!core.Init(AUDIO_SAMPLE_RATE_EXACT, shared_arena, shared_bytes)) return false;
+    shared_owner = this;
     return true;
   }
 
+  // Stops processing and releases the claim; the arena stays allocated.
   void end() {
     __disable_irq();
     core.Release();
+    if (shared_owner == this) shared_owner = nullptr;
     __enable_irq();
-    FreeArena();
   }
 
   bool ready() const { return core.Ready(); }
@@ -99,14 +110,10 @@ public:
   }
 
 private:
-  void FreeArena() {
-    if (!arena) return;
-    free(arena);
-    arena = nullptr;
-  }
-
   audio_block_t* inputQueueArray[2];
   AbyssCore core;
-  void* arena = nullptr;
+  static inline void* shared_arena = nullptr;
+  static inline size_t shared_bytes = 0;
+  static inline AudioEffectAbyssReverb* shared_owner = nullptr;
   float in_gain = 1.0f;
 };
