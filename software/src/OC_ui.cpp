@@ -306,12 +306,17 @@ UiMode Ui::Splashscreen(bool &reset_settings, uint8_t phase) {
         graphics.setPrintPos(28, 33);   // 12 chars
         graphics.print("Fresh Start!");
       } else {
-        graphics.setPrintPos(19, 16);   // 15 chars = 90 px
+        // five lines, 12 px pitch, each centred: x = (128 - 6 * chars) / 2
+        graphics.setPrintPos(19, 4);    // 15 chars = 90 px
         graphics.print("WELCOME TO OCOC");
-        graphics.setPrintPos(25, 30);   // 13 chars = 78 px
-        graphics.print("A PHAZERVILLE");
-        graphics.setPrintPos(16, 40);   // 16 chars = 96 px
-        graphics.print("EXPERIMENTAL MOD");
+        graphics.setPrintPos(7, 16);    // 19 chars = 114 px
+        graphics.print("A SLIGHTLY MODIFIED");
+        graphics.setPrintPos(10, 28);   // 18 chars = 108 px
+        graphics.print("EXPERIMENTAL BUILD");
+        graphics.setPrintPos(22, 40);   // 14 chars = 84 px
+        graphics.print("THAT IS MOSTLY");
+        graphics.setPrintPos(31, 52);   // 11 chars = 66 px
+        graphics.print("PHAZERVILLE");
       }
 #else
       ZapScreensaver();
