@@ -29,6 +29,12 @@ public:
   }
 
   void Controller() {
+    // OCOC 2026-09-15: the arena is single-owner and applet transitions start
+    // the arriving applet BEFORE unloading the departing one (SwapMonoStereo,
+    // LoadPreset walking slots 0..n), so begin() in Start() can be refused by
+    // an owner that is released a moment later. Retry until it succeeds;
+    // begin() is a cheap early-out while another instance holds the arena.
+    if (!alloc_ok) alloc_ok = reverb.begin();
     const float mix01 = constrain(0.01f * wet + mix_cv.InF(), 0.0f, 1.0f);
     const float grav = constrain(0.01f * gravity + grav_cv.InF(), -1.0f, 1.0f);
     const float size01 = constrain(0.01f * size + size_cv.InF(), 0.0f, 1.0f);
