@@ -40,7 +40,7 @@ def after_build(source, target, env):
     out = env.subst("${PROGNAME}.hex")
 
     platform = env.PioPlatform()
-    subprocess.call([join(platform.get_package_dir("tool-sreccat") or "", "srec_cat"),
+    subprocess.check_call([join(platform.get_package_dir("tool-sreccat") or "", "srec_cat"),
                      app_A, "-Intel", app_B, "-Intel", app_X, "-Intel", app_Y, "-Intel",
                      "-o", out, "-Intel"])
 

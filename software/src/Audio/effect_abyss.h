@@ -2,7 +2,7 @@
 // Teensy Audio Library wrapper for AbyssCore (see blackhole_core.h).
 // Stereo in, stereo out, wet-only (the applet handles dry/wet mixing).
 //
-// Delay memory (~150 KB at 48 kHz) is allocated in one arena on the RAM2
+// Delay memory (230,028 B at 48 kHz, same for mono and stereo) is one arena on the RAM2
 // heap. There is deliberately NO PSRAM fallback (OCOC v0.1, 2026-09-14): a
 // PSRAM-resident instance costs >50 % CPU for the tank's scattered reads, and
 // on the bench a third instance loaded that way took the module down with a

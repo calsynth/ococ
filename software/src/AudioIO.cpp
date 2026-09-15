@@ -23,7 +23,7 @@ namespace OC {
     // the USB output updated last in the pass, that time jittered with the
     // applets' cost (Abyss: ~30 scattered arena reads/sample) and the
     // controller lost lock -> ring under/overrun -> clicks on USB only, analog
-    // clean, CPU% unremarkable. Cost: one block (2.9 ms) of extra latency on
+    // clean, CPU% unremarkable. Cost: one 128-sample block (2.67 ms at 48 kHz) of extra latency on
     // the USB output. Diagnosis: usb-audio-glitch-diagnosis.md (2026-08-10).
     // OCOC only: the stock X/Y slots keep upstream's order and latency.
 #ifdef OCOC
