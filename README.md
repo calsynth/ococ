@@ -1,9 +1,7 @@
 # OCOC
 
 **OCOC** is Calsynth's open firmware for the XLOC2 and other Teensy 4.1
-Ornament & Crime hardware. The name is Orange County + O&C hardware; it is a
-Calsynth project and is not affiliated with or endorsed by the Ornament & Crime
-or Phazerville projects.
+Ornament & Crime hardware. It is a Calsynth project and is not affiliated with or endorsed by the Ornament & Crime or Phazerville projects.
 
 It is **based on Phazerville Suite v2.0.1** with three additions:
 
