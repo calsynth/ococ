@@ -1,0 +1,45 @@
+name: Bug report
+description: Something in OCOC doesn't work the way it should
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing, check the release notes' **Known limits** section and search existing issues — a few common ones (USB audio needs a 128-sample DAW buffer, one Abyss instance at a time, WebSerial needs Chrome/Edge/Arc) are already documented there and aren't bugs.
+  - type: input
+    id: version
+    attributes:
+      label: OCOC version / build id
+      description: Shown on the module's boot screen or Setup/About page
+      placeholder: OCOC v0.1, build 15fe5a8b
+    validations:
+      required: true
+  - type: dropdown
+    id: slot
+    attributes:
+      label: Slot
+      options:
+        - A (OCOC, MIDI + Audio)
+        - B (OCOC, MIDI)
+        - X (stock Phazerville, MIDI + Audio)
+        - Y (stock Phazerville, MIDI)
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, what happened instead
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: If you can make it happen again, the exact steps help a lot
+  - type: input
+    id: daw
+    attributes:
+      label: DAW / audio interface (only if this involves USB audio)
+      placeholder: e.g. Ableton Live 12, buffer 256

@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Quad Viewer help
+    url: https://ocusers.com/tools/quad-viewer
+    about: Using the browser-based Quad Viewer? Check its own docs there first — most connection questions are answered on that page.

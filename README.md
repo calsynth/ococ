@@ -1,104 +1,118 @@
-[![PlatformIO CI](https://github.com/djphazer/O_C-Phazerville/actions/workflows/firmware.yml/badge.svg)](https://github.com/djphazer/O_C-Phazerville/actions/workflows/firmware.yml) [![GitHub Release](https://img.shields.io/github/v/release/djphazer/O_C-Phazerville)](https://github.com/djphazer/O_C-Phazerville/releases/latest)
+# OCOC
 
-Phazerville Suite - an active o_C firmware fork
-===
-[![SynthDad is pretty cool ;P](http://img.youtube.com/vi/kT94mBjvVQI/0.jpg)](http://www.youtube.com/watch?v=kT94mBjvVQI "Ornament and Crime Teensy 4.1 with Phazerville. What's New and Improved?")
+**OCOC** is Calsynth's open firmware for the XLOC2 and other Teensy 4.1
+Ornament & Crime hardware. The name is Orange County + O&C hardware; it is a
+Calsynth project and is not affiliated with or endorsed by the Ornament & Crime
+or Phazerville projects.
 
-<details><summary>More Videos...</summary>
+It is **based on Phazerville Suite v2.0.1** with three additions:
 
-  [![Firmware Update v1.10](http://img.youtube.com/vi/UvlA5_C1aig/0.jpg)](http://www.youtube.com/watch?v=UvlA5_C1aig "Phazerville Suite v1.10 - O_C Firmware Update")
-  [![SynthDad's v1.7 update](http://img.youtube.com/vi/bziSog_xscA/0.jpg)](http://www.youtube.com/watch?v=bziSog_xscA "Ornament and Crime Phazerville 1.7: What's new in this big release!")
-  [![SynthDad's video overview](http://img.youtube.com/vi/XRGlAmz3AKM/0.jpg)](http://www.youtube.com/watch?v=XRGlAmz3AKM "Phazerville; newest firmware for Ornament and Crime. Tutorial and patch ideas")
-  [![Pigeons, Polyrhythms, Music & Math](http://img.youtube.com/vi/J1OH-oomvMA/0.jpg)](http://www.youtube.com/watch?v=J1OH-oomvMA "Pigeons & Polyrhythms / Music & Math")
-  [![DualTM & O_C T4.1 Hardware](http://img.youtube.com/vi/51cchuLNIDU/0.jpg)](http://www.youtube.com/watch?v=51cchuLNIDU "Next-gen O_C T4.1 Hardware + DualTM applet")
-</details>
+- **The display suite** — the module's screen, all four Quadrants applets,
+  audio meters, two oscilloscopes and a MIDI monitor, live in a browser over
+  USB, with remote control of the module from the computer. This is what the
+  [Quad Viewer](https://ocusers.com/tools/quad-viewer) talks to.
+- **Abyss** (reverb) turned on in the audio applet list. It was already in the
+  Phazerville source, credited to Calsynth; here it is registered. One
+  instance per module; a second says "Out of RAM!!" and stays off. (Animorf,
+  the companion filter bank, is held back until its DSP is fixed.)
+- A USB serial port in the MIDI and MIDI + Audio slots, which is what makes the
+  viewer possible.
 
-Watch some **video overviews** (above) or check the [**project website**](https://firmware.phazerville.com) for more info, including commercial product links.
+No app or applet has been removed. Stock Phazerville v2.0.1 rides along in two
+boot slots of its own, so you can switch back at power-up.
 
-[Download a firmware **Release**](https://github.com/djphazer/O_C-Phazerville/releases) or [Request a **Custom Build**](https://github.com/djphazer/O_C-Phazerville/discussions/38) (for Teensy 3.2).
+## Download and flash
 
-Grab Paul's [**Screen Capture**](https://github.com/PaulStoffregen/Phazerville-Screen-Capture) program to view the screen on a PC via USB.
+Grab `ococ-<version>_T41-<commit>.hex` from the latest
+[release](../../releases). Flash it with the
+[Teensy Loader](https://www.pjrc.com/teensy/loader.html) exactly as you would an
+official Phazerville hex: open the file, press the button on the Teensy (or
+reboot from the module's menu), done. One hex carries all four slots.
 
-## Hardware Info
-There are two distinct _microcontrollers_ aka MCU's (and each has variants) and also two distinct hardware _shields_, and there's some overlap.
+**Everything you need to know about the boot menu:** hold **Z** while powering
+up and the menu appears; press **A**, **B**, **X** or **Y** to boot that slot
+this once. To make it stick, keep **Z** held while you press the slot button.
 
-### Shields:
-* **o_C** - based on the original "ornament & crime" hardware design by **mxmxmx**
-  - 4ch ADC / 4ch DAC
-  - DAC and OLED share a SPI bus
-  - 8HP uO_c by jakplugg - https://github.com/jakplugg/uO_c
-  - original 14HP panels & gerbers are in the `hardware` directory
-* **O.R.N.8** aka "O_C T4.1" - https://github.com/PaulStoffregen/O_C_T41
-  - 8ch ADC / 8ch DAC / 2ch Audio In + 2ch Audio Out
-  - SPI0 dedicated for DAC
-  - SPI1 dedicated for OLED
-  - Serial MIDI In + Out / USB Host MIDI
-  - designed by Paul, derived from original
+| Button | Slot | USB appears as |
+|---|---|---|
+| **A** | OCOC, MIDI + Audio | serial port + MIDI + 4-channel USB audio |
+| **B** | OCOC, MIDI | serial port + MIDI |
+| **X** | Stock Phazerville v2.0.1, MIDI + Audio | MIDI + 4-channel USB audio (as upstream) |
+| **Y** | Stock Phazerville v2.0.1, MIDI | MIDI (as upstream) |
 
-### MCUs:
-* Teensy 3.2 - compatible with O_C
-* Teensy 4.0 - compatible with O_C
-* Teensy 4.1 - compatible with O_C or ORN8
+The Quad Viewer works in **A** and **B**; X and Y are upstream Phazerville as
+released, with its own boot screen. If you never touch the menu the module boots
+into whichever slot you last saved, as before.
 
-Thus, the 4.x series are pin-compatible drop-in replacements for the old existing O_C hardware. They bring increased CPU, RAM, and Flash capacity, while working with the existing limitations of the design (sharing a SPI bus). Although the 4.1 can technically work with O_C (using the T40 firmware), the form factor of the 4.0 is more fitting, especially on the 8HP model.
+## USB audio: set your DAW buffer to 128 or more
 
-The T41 firmware builds primarily target the new O.R.N.8 hardware shield, with new features that take advantage of it (lots of Audio DSP stuff), but many CV and MIDI features will still show up in the T40 builds for old hardware. T32 support is deprecated, but will remain available for Custom Builds, receiving occasional Applet updates.
+128 samples is the firmware's limit — the audio engine runs in 128-sample
+blocks and the USB audio driver (inherited from upstream; stock Phazerville is
+the same) needs the DAW's I/O buffer at least that large. At 64 the
+computer→module stream garbles. If a stream does garble, deselect and reselect OCOC as the
+audio device in the DAW, or unplug and reconnect the USB cable — it restarts
+clean, no reboot. Details in the release notes.
 
-## Stolen Ornaments
+## Using the Quad Viewer
 
-Using [**Benisphere**](https://github.com/benirose/O_C-BenisphereSuite) as a starting point, this project takes the **Hemisphere** ecosystem in new directions, with many new applets and enhancements to existing ones. An effort has been made to collect all the bleeding-edge features from other developers, with the goal of cramming as much functionality and flexibility into the nifty dual-applet design as possible!
+See [`docs/QUAD-VIEWER.md`](docs/QUAD-VIEWER.md) — what it shows, how to connect,
+the keyboard shortcuts, and what to do when nothing shows up.
 
-I've also included **all of the stock O&C firmware apps** plus a few others, _but they don't all fit in one .hex_. As a courtesy, I provide **pre-built .hex files** with a selection of Apps in my [**Releases**](https://github.com/djphazer/O_C-Phazerville/releases). You can also tell a robot to make a [**Custom Build**](https://github.com/djphazer/O_C-Phazerville/discussions/38) for you... (T3.2 only)
+## What actually changed
 
-...or clone the repo, customize the `platformio.ini` file, and build it yourself! ;-)
-I think the beauty of this module is the fact that it's relatively easy to modify and build the source code to reprogram it. You are free to customize the firmware to work in your system, similar to how you've no doubt already selected a custom set of physical modules.
+[`docs/TECHNICAL-NOTES-v0.1.md`](docs/TECHNICAL-NOTES-v0.1.md) is the build-level
+account: what this is based on, every change and why, the RAM1 diet, the USB audio
+ordering fix, what was withdrawn and what is reported upstream.
+[`docs/usb-audio-glitch-diagnosis.md`](docs/usb-audio-glitch-diagnosis.md) is the full
+diagnosis behind that fix.
 
-## How To Hack It
+## Building
 
-### Option 1: Platform IO
-This firmware fork is primarily built using Platform IO, a Python-based build toolchain, available as either a [standalone CLI](https://docs.platformio.org/en/latest/core/installation/methods/installer-script.html) or a [full-featured IDE](https://platformio.org/install/ide), as well as a plugin for VSCode and other existing IDEs. Follow one of those links to get that set up first.
+Standard PlatformIO. Four environments make the release hex, in this order:
 
-The PlatformIO project for the source code lives within the `software/` directory. From there, you can Build the desired configuration and Upload via USB to your module. In the terminal, I type:
 ```
-pio run -e T41_audio -t upload
+cd software
+pio run -e T41 -e T41_audio -e T41_stock_audio -e T41_stock
 ```
-Or, for older Teensy 3.2 modules:
-```
-pio run -e T32 -t upload
-```
-Or use `T40` for Teensy 4.0. Have a look inside `platformio.ini` for alternative build environment configurations and app flags.
 
-_**Pro-tip**_: If you decide to fork the project, and enable GitHub Actions on your own repo, GitHub will build the files for you... ;)
+`T41_stock` is last because its post-build step assembles the four slot images
+into one multiboot hex. The two `stock` environments are the same tree built
+without `-DOCOC` and `-DQUAD_CAPTURE`, with upstream's USB types. The compiler is pinned in `platformio.ini` to the version
+the release was benched with. `teensy_size` is the gate that matters: if it
+reports a negative "free for local variables" figure the module will come up
+with a blank screen, so treat that as a failed build.
 
-### Option 2: Arduino IDE
-Instead of Platform IO, you can use the latest version of the Arduino IDE + Teensyduino extension. The newer 2.x series should work, no need to install an old version.
+## Relationship to upstream
 
-Simply open the `software/src/src.ino` file. In the Tools menu, select the appropriate Teensy Board for your hardware; use the "Optimize -> Smallest Code" and "USB Type -> MIDI" options.
+OCOC tracks [Phazerville Suite](https://github.com/djphazer/O_C-Phazerville)
+(`upstream` remote). It exists so that Calsynth's display tools ship on
+Calsynth's schedule; when the display suite lands upstream this fork will rebase
+onto it and shrink to the applet enables and USB configuration. Upstream fixes
+are merged in as they appear. The two `T41_stock*` environments — built without
+`-DOCOC`, `-DQUAD_CAPTURE` and `-DUSB_MIDI_SERIAL` — are what runs in slots X and
+Y: behaviourally stock Phazerville v2.0.1, though not bit-identical to the
+official hex.
 
-Customize Apps and other flags inside `software/src/OC_options.h`. You can also disable individual applets in `software/src/hemisphere_config.h`.
+## Questions, bugs, feature ideas
 
-For Teensy 4.1, you'll need a copy of my forked playback library in your local sketchbook folder. Inside the `Arduino/libararies` directory: `git clone https://github.com/djphazer/teensy-variable-playback.git`
+Please use [Issues](../../issues) on this repo rather than emailing — it's
+the only way I can track requests and keep the answer visible to the next
+person who hits the same thing. Click **New issue** and pick a template:
+**Bug report** for something broken, **Question / support** for "how do
+I...", **Feature idea** for something OCOC doesn't do yet. Check open and
+closed issues first; your question may already be answered.
 
 ## Credits
 
-Many minds before me have made this project possible. Attribution is present in the git commit log and within individual files.
+- **Phazerville Suite** — Nicholas J. Michalek (djphazer) and contributors
+- **Hemisphere Suite** — Jason Justian and the Benisphere lineage
+- **Ornament & Crime** — Patrick Dowling, Max Stadler, Tim Churches
+- **Mutable Instruments** — Émilie Gillet, for the vendored DSP
+- **Abyss, the display suite** — Calsynth
 
-Thanks & Shoutouts:
-* **[Paul Stoffregen](https://github.com/PaulStoffregen)** (PJRC) for Teensy 4.x driver code, new hardware designs, and lots of support!
-* **[beau-seidon](https://github.com/beau-seidon)** for polyphonic MIDI handling, **ProbMeloD** mask rotation, **WTVCO**, and free-flowing enthusiasm.
-* **[qiemem](https://github.com/qiemem)** (Bryan Head) for **Ebb&LFO** and its _tideslite_ backend, the Audio Applet framework, and many other things.
-* **[Logarhythm1](https://github.com/Logarhythm1)** for the incredible **TB-3PO** sequencer, as well as **Stairs**.
-* **[herrkami](https://github.com/herrkami)** and **Ben Rosenbach** for their work on **BugCrack**.
-* **[benirose](https://github.com/benirose)** also gets massive props for **DrumMap**, **Shredder** and the **ProbDiv / ProbMeloD** applets.
+## Licence
 
-And, of course, thank you to **[Chysn](https://github.com/Chysn)** (RIP) for the clever applet framework from which we've all drawn inspiration - what a legend!
-
-This is a fork of [Benisphere Suite](https://github.com/benirose/O_C-BenisphereSuite) which is a fork of [Hemisphere Suite](https://github.com/Chysn/O_C-HemisphereSuite) by Jason Justian (aka Chysn / [Beige Maze](https://soundcloud.com/beige-maze)).
-
-ornament**s** & crime**s** was a collaborative firmware project by Patrick Dowling (aka **pld**), mxmxmx, and Tim Churches (aka **bennelong.bicyclist**), considerably extending the original firmware for the o_C / ASR eurorack module, designed by **mxmxmx**.
-
-http://ornament-and-cri.me/
-
-## License
-
-Except where otherwise noted in file headers, all code herein is generally considered MIT licensed. However, there are some GPLv3 bits included, so the whole thing is also subject to compliance with the GPL. [More info here](https://ornament-and-cri.me/licensing/).
+Inherited from upstream, every file header kept. In upstream's words: *"Except
+where otherwise noted in file headers, all code herein is generally considered
+MIT licensed. However, there are some GPLv3 bits included, so the whole thing is
+also subject to compliance with the GPL."*

@@ -1,0 +1,17 @@
+name: Question / support
+description: "How do I...?" or something isn't behaving how you expect and you're not sure it's a bug
+labels: [question]
+body:
+  - type: markdown
+    attributes:
+      value: Check the README, the Quad Viewer guide and the release notes first — most "how do I" and "why does X happen" questions are already answered there.
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: OCOC version / build id (if relevant)

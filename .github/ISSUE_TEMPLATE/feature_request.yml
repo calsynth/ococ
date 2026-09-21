@@ -1,0 +1,15 @@
+name: Feature idea
+description: Something you'd like OCOC to do that it doesn't yet
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like OCOC to do?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: What's the use case?
+      description: What are you trying to do that this would help with?
