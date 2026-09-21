@@ -1,66 +1,60 @@
-# Using the Quad Viewer with OCOC
+# The Quad Viewer
 
-*Ships as `docs/QUAD-VIEWER.md` in the `calsynth/ococ` repo and as the text
-under the release download.*
+There is not much to do other than hook up a cable and go to a web page.
 
-The Quad Viewer puts your module's screen — and a lot the screen can't show —
-in a browser tab. It is a single web page at
-**[ocusers.com/tools/quad-viewer](https://ocusers.com/tools/quad-viewer)**.
-Nothing to install, no driver; the page talks to the USB port directly and
-sends nothing anywhere else.
+- Flash OCOC and boot into **slot A** (OCOC, MIDI + Audio) or **slot B** (OCOC, MIDI).
+  Those are the two slots that show up as a serial port. Slots X and Y are stock
+  Phazerville and will not connect.
+- You will need a **USB data cable** (not a charge-only one) between the module and your
+  computer — the front-panel USB-C on XLOC2 and other Expanded ORN8 modules, or the
+  Teensy's micro-USB on the board. Not the USB host jack; that one is for MIDI
+  controllers.
+- It works in Chrome, Edge or Arc. Firefox added Web Serial in version 151, so that
+  should work too. No Safari, and nothing else that does not support Web Serial.
 
-## You need
+Head to the viewer page at **https://ocusers.com/tools/quad-viewer/app/**, click **Connect**,
+and pick the module's serial port from the list the browser shows you — it is named
+**OCOC** (`usbmodem…` on a Mac, `COM…` on Windows). It should immediately come to life
+and show you what is going on in your module.
 
-1. **OCOC in slot A or B.** The viewer needs the module to show up as a USB
-   serial port, and only OCOC's A (MIDI + Audio) and B (MIDI) slots do that.
-   Slots X and Y are stock Phazerville (X keeps USB audio) with no serial port,
-   and will not connect — nor will a stock Phazerville download. Hold Z at
-   power-up for the boot menu, then press A or B; keep Z held while pressing to
-   save the choice.
-2. **Chrome, Edge or Arc — or Firefox 151 or later.** WebSerial has been in the
-   Chromium browsers for years; Firefox added it in 151 (May 2026). Firefox should
-   work here but has not been tested — tell me either way. Safari has no WebSerial
-   and there is no workaround.
-3. **A USB data cable** to the module's front-panel USB-C (XLOC2 and other
-   Expanded ORN8 modules) or the Teensy's micro-USB on the board. Not the USB
-   host jack — that one is for MIDI controllers. If the module never shows up
-   in the port list, the cable is charge-only; try another.
+### The panes
 
-## Connecting
+The window is a 2×2 grid and each pane can be set as you like: all four Quadrants
+applets at once, a live mirror of the module screen, the audio stack with in/out meters,
+your MIDI maps, a live MIDI monitor, either of the two scopes, or off. The ⛶ button in a
+pane fills the window with that pane. The layout is remembered for next time you open the viewer.
 
-Plug in, open the page, click **Connect**, pick the port the browser offers
-(named **OCOC**; `usbmodem…` on a Mac, `COM…` on Windows). The screen appears within a second.
-The layout you set is remembered for next time.
+Hit the **Help** button any time for a popup of the general instructions and keyboard
+shortcuts.
 
-## What the four panels can show
+You can also control the module from the browser with a mouse — hit **Control** at the
+top and the on-screen arrows, encoders and keys that appear send the same encoder turns
+and button presses as the front panel.
 
-The page is a 2×2 grid. Each panel has its own dropdown:
+At the bottom of a pane that is showing Quadrants you will see controls for selecting
+apps and presets and entering values on a selected app. When you change something in the
+browser, you will see it change on your module.
 
-- **Live screen** — a mirror of the OLED, any app, any page. What you see on
-  the module, you see here.
-- **Quadrants 4-up** — all four applets rendered at once, each full size,
-  including the two the module's own screen is hiding. This is the view the
-  firmware was built for.
-- **Audio stack** with input and output level meters.
-- **MIDI map**, or a live **MIDI monitor** of everything in and out, with
-  pause, clear, direction and channel filters.
-- **Scope A / Scope B** — any CV out, CV in, trigger in, audio in or out.
-  Scale, time base and offset controls, plus freeze.
-- **Off**.
+**Audio + levels** shows the current audio stack, and when you have audio plugged into
+the audio ins, L and R input and output levels on a bar meter.
 
-The ⛶ button fills the window with one panel. **Classic** in the toolbar swaps
-the whole grid for one big mirror of the OLED — the best choice for filming a
-patch walk-through or screen-sharing.
+A **scope** pane shows whatever is selected in the SRC dropdown at the bottom of the
+scope — CV ins and outs, audio ins and outs, or triggers. Also at the bottom of the pane
+are controls for scale, time, offset, reset and Freeze. This is a great tool for monitoring anything in your rig.
 
-## Driving the module from the computer
+A **MIDI monitor** pane shows what is going in and out, with pause, clear and direction
+filters.
 
-**Control** in the toolbar opens on-screen buttons and two endless encoders —
-drag or scroll to turn them — so you can operate the module without reaching
-for it. **MODE** switches the module between Quadrants and Audio Setup. The
-preset dropdown loads a preset when you pick it, and **Save** writes the
-current state into the selected slot.
+Back to the top. The **preset** dropdown selects a preset, or select a blank slot to save
+the changes you have made with the **Save** button next to it. **Classic** shows the
+classic 2-up viewer, essentially a mirror of the screen on the module. **Color** changes
+the colour of the information in the panes. **Save PNG** saves a screenshot of the
+current view. **Fullscreen** drops the toolbars and fills the screen with just the panes
+— useful if you need to do a screen recording.
 
-Keyboard, once connected:
+## Keyboard shortcuts
+
+Once connected:
 
 | Key | Does |
 |---|---|
@@ -80,30 +74,24 @@ Keyboard, once connected:
 | `Backspace` | back to cursor mode |
 | hold `Shift` | the same keys drive the right side |
 
-**Color** cycles the phosphor tint; **Save PNG** captures the current view.
-The **Help** button on the page repeats all of this.
-
 ## If nothing shows up
 
-- No port in the list → charge-only cable, or the module is in slot X or Y
-  (stock Phazerville). Hold **Z** at power-up for the boot menu, then press
-  **A** or **B** (keep Z held to save).
-- Port is there but the screen stays blank → click Disconnect, power-cycle the
-  module, Connect again. Another program (Arduino IDE serial monitor, a DAW's
-  MIDI-over-serial bridge) holding the port will also do this — close it.
-- Browser says WebSerial isn't available → you're in Firefox or Safari.
-- 4-up view is empty but the mirror works → the module is not in Quadrants;
-  click **MODE**.
-- USB audio garbles in either direction (module→computer with the module's
-  own outputs clean, or computer→module heard on the analog outs) → first set
-  the DAW's I/O buffer to 128 samples or more (the firmware's limit; 64
-  provokes it, in stock Phazerville too); then deselect and reselect OCOC as the audio device in
-  your DAW, or unplug and reconnect the USB cable; the stream restarts clean.
-- The module rebooted on its own → it keeps a report of the last crash. With
-  the viewer disconnected, send the four characters `O?!!` to the port **in
-  one go** (paste them, or use the command below — typed one key at a time
-  they arrive too slowly and nothing happens). Send us what it prints before
-  `ENDCRASH`; `NOCRASH` means nothing was recorded. On a Mac, in Terminal:
+- No port in the list: charge-only cable, or the module is in slot X or Y (stock
+  Phazerville). Hold **Z** at power-up for the boot menu, then press **A** or **B** (keep
+  Z held to save the choice).
+- Port is there but the screen stays blank: click Disconnect, power-cycle the module,
+  Connect again. Another program holding the port (Arduino IDE serial monitor, a DAW's
+  MIDI-over-serial bridge) will also do this — close it.
+- Browser says Web Serial isn't available: you are in Safari, or a Firefox older than 151.
+  Use Chrome, Edge or Arc.
+- 4-up view is empty but the mirror works: the module is not in Quadrants. Click **MODE**.
+- USB audio garbles in either direction: set the DAW's I/O buffer to 128 samples or more,
+  then deselect and reselect OCOC as the audio device, or unplug and reconnect the USB
+  cable.
+- The module rebooted on its own: it keeps a report of the last crash. With the viewer
+  disconnected, send the four characters `O?!!` to the port in one go (paste them — typed
+  one key at a time they arrive too slowly). Put what it prints before `ENDCRASH` in a bug
+  report; `NOCRASH` means nothing was recorded. On a Mac, in Terminal:
 
   ```
   PORT=$(ls /dev/cu.usbmodem* | head -1); stty -f $PORT raw -echo
@@ -112,5 +100,5 @@ The **Help** button on the page repeats all of this.
 
 ## Building your own
 
-The wire protocol is documented in `PROTOCOL.md` in this repo if you want to
-build your own viewer.
+The wire protocol is documented in `PROTOCOL.md` in this repo if you want to build your
+own viewer.
