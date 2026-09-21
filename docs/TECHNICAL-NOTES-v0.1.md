@@ -16,7 +16,7 @@ removal of the unused USB-MIDI SysEx mirror, and the OCOC boot screen.
   rendered at once), live screen mirror, remote control from the computer, two
   oscilloscopes (any CV/trigger/audio in or out, scale, time base, offset,
   freeze), MIDI in/out monitor, audio in/out level meters. Works with the
-  [Quad Viewer](https://ocusers.com/tools/quad-viewer) in a Chromium browser —
+  [Quad Viewer](https://ocusers.com/tools/quad-viewer/app/) in a Chromium browser —
   nothing to install.
 - **Abyss** — reverb, mono and stereo, in the audio applet list in the A and B
   slots. One instance per module: it takes ~230 KB of RAM2, a second shows

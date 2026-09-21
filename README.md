@@ -8,7 +8,7 @@ It is **based on Phazerville Suite v2.0.1** with three additions:
 - **The display suite** — the module's screen, all four Quadrants applets,
   audio meters, two oscilloscopes and a MIDI monitor, live in a browser over
   USB, with remote control of the module from the computer. This is what the
-  [Quad Viewer](https://ocusers.com/tools/quad-viewer) talks to.
+  [Quad Viewer](https://ocusers.com/tools/quad-viewer/app/) talks to.
 - **Abyss** (reverb) turned on in the audio applet list. It was already in the
   Phazerville source, credited to Calsynth; here it is registered. One
   instance per module; a second says "Out of RAM!!" and stays off. (Animorf,
